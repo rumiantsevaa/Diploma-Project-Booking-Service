@@ -1,6 +1,8 @@
-## Diploma Project Booking Service
+## Diploma Project: Booking Service
 
 ### _This repository contains materials for the 2025 diploma project, Topic №2 "Booking"_ 
+
+### _Project requirments/ Team Roles Description is also available [in Russian](https://github.com/rumiantsevaa/Diploma-Project-Booking-Service/blob/main/(ru)README.md)._ 
 
 ## Team members:
 
