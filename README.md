@@ -1,4 +1,4 @@
-## Diploma Project: Booking Service
+## 2025 Diploma Project: Booking Service
 
 ### _This repository contains materials for the 2025 diploma project, Topic №2 "Booking"_ 
 
