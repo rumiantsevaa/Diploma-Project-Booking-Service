@@ -6,11 +6,10 @@
 
 ## Team members:
 
-@
+[@rumiantsevaa](https://github.com/rumiantsevaa) - System Administration & Security Deliverables 
 
-@
+[@Wolodya-TOP](https://github.com/Wolodya-TOP) - Design Deliverables
 
-[@rumiantsevaa](https://github.com/rumiantsevaa)
 
 ## Project Functional Requirements by Team Roles:
 
