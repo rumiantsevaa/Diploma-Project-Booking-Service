@@ -3,5 +3,18 @@ There will be listed Documentation of the Current Project Progress.
 09.12
 A GitHub repository has been created: https://github.com/rumiantsevaa/Diploma-Project-Booking-Service.
 Access has been configured for the team. The designer has been added to the project as a collaborator and can work in their own branch: /design.
-A domain name for the website has been rented on the nic.ua portal: http://bbooking.pp.ua. The domain is valid for one year.
+A domain name for the website has been rented on the nic.ua portal bbooking.pp.ua. The domain is valid for one year.
 
+10.12
+Updated the domain’s Nameservers (NS) to Cloudflare’s to manage the domain through Cloudflare.
+Added bbooking.pp.ua to Cloudflare, enabling performance, security, and encryption features.
+Updated DNS records, including: A CNAME record for www.bbooking.pp.ua, pointing to rumiantsevaa.github.io, and set proxy status to Proxied for security.
+
+Initially, the custom domain in GitHub Pages was set to bbooking.pp.ua. 
+This setup led to DNS resolution issues due to GitHub's restrictions on using CNAME for the root domain (bbooking.pp.ua).
+The solution was to change the custom domain to www.bbooking.pp.ua in GitHub Pages, as GitHub Pages can support a CNAME record for subdomains like www. 
+This fixed the DNS issue and allowed proper routing of the custom domain.
+
+The website is now accessible at https://www.bbooking.pp.ua/.
+Cloudflare’s security and performance features are active, including HTTPS encryption.
+GitHub Pages automatically builds and deploys the site whenever changes are made to the main branch on GitHub in the /docs folder, ensuring the site is always up to date with the latest changes.
