@@ -1,0 +1,61 @@
+name: Deploy to AWS and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Клонируем репозиторий
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # 2. Настраиваем SSH-доступ
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.AWS_SSH_KEY }}
+
+    # 3. Логинимся в Docker Hub
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    # 4. Собираем Docker-образ
+    - name: Build Docker Image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/booking_app:latest .
+
+    # 5. Публикуем Docker-образ на Docker Hub
+    - name: Push Docker Image to Docker Hub
+      run: |
+        docker push ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
+
+    # 6. Подключаемся к серверу и выполняем команды
+    - name: Deploy to AWS
+      env:
+        SERVER_IP: ${{ secrets.AWS_SERVER_IP }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+      run: |
+        ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << 'EOF'
+          # Устанавливаем обновления и зависимости
+          sudo apt update
+          sudo apt install -y python3 python3-pip sqlite3 docker.io
+
+          # Проверяем Docker
+          if ! [ -x "$(command -v docker)" ]; then
+            echo "Docker not found, installing..."
+            sudo apt install -y docker.io
+          fi
+
+          # Удаляем старый проект
+          sudo docker stop booking_app || true
+          sudo docker rm booking_app || true
+
+          # Запускаем новый контейнер из Docker Hub
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
+          sudo docker run -d --name booking_app -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
+        EOF
