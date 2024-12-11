@@ -45,17 +45,28 @@ jobs:
           sudo apt update
           sudo apt install -y python3 python3-pip sqlite3 docker.io
 
-          # Проверяем Docker
-          if ! [ -x "$(command -v docker)" ]; then
-            echo "Docker not found, installing..."
-            sudo apt install -y docker.io
-          fi
+           # Проверяем Docker
+            if ! [ -x "$(command -v docker)" ]; then
+              echo "Docker not found, installing..."
+              sudo apt install -y docker.io
+            fi
 
-          # Удаляем старый проект
-          sudo docker stop booking_app || true
-          sudo docker rm booking_app || true
+            # Проверяем Certbot
+            if ! [ -x "$(command -v certbot)" ]; then
+              echo "Certbot not found, installing..."
+              sudo apt install -y certbot
+            fi
 
-          # Запускаем новый контейнер из Docker Hub, с пробросом порта 80 на 80
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
-          sudo docker run -d -p 80:80 --name booking_app ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
-        EOF
+            # Получаем SSL-сертификаты (заменяем EMAIL_FOR_CERTBOT и домен на переменные)
+            sudo certbot certonly --standalone -n --agree-tos --email EMAIL_FOR_CERTBOT -d www.bbooking.pp.ua
+
+            # Удаляем старый проект
+            sudo docker stop booking_app || true
+            sudo docker rm booking_app || true
+
+            # Запускаем новый контейнер из Docker Hub
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
+            sudo docker run -d -p 443:443 --name booking_app \
+              -v /etc/letsencrypt/live/www.bbooking.pp.ua:/etc/letsencrypt/live/www.bbooking.pp.ua \
+              ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
+          EOF
