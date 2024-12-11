@@ -18,3 +18,6 @@ This fixed the DNS issue and allowed proper routing of the custom domain.
 The website is now accessible at https://www.bbooking.pp.ua/.
 Cloudflare’s security and performance features are active, including HTTPS encryption.
 GitHub Pages automatically builds and deploys the site whenever changes are made to the main branch on GitHub in the /docs folder, ensuring the site is always up to date with the latest changes.
+
+11.12 
+The website migtation to AWS server.
