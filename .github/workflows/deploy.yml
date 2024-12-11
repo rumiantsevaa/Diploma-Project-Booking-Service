@@ -8,41 +8,67 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
+    # Клонируем репозиторий
     - name: Checkout code
       uses: actions/checkout@v3
 
+    # Настройка SSH
     - name: Setup SSH
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.AWS_SSH_KEY }}
 
+    # Логинимся в Docker Hub
     - name: Log in to Docker Hub
       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
+    # Собираем Docker-образ
     - name: Build Docker Image
-      run: docker-compose build
-
-    - name: Push Flask Docker Image to Docker Hub
       run: |
-        docker tag flask_app ${{ secrets.DOCKER_USERNAME }}/booking_app:flask
-        docker push ${{ secrets.DOCKER_USERNAME }}/booking_app:flask
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/booking_app:latest .
 
-    - name: Push Nginx Docker Image to Docker Hub
+    # Публикуем Docker-образ на Docker Hub
+    - name: Push Docker Image to Docker Hub
       run: |
-        docker tag nginx ${{ secrets.DOCKER_USERNAME }}/booking_app:nginx
-        docker push ${{ secrets.DOCKER_USERNAME }}/booking_app:nginx
+        docker push ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
 
+    # Подключаемся к серверу и выполняем команды
     - name: Deploy to AWS
-      uses: appleboy/ssh-action@master
+      env:
+        SERVER_IP: ${{ secrets.AWS_SERVER_IP }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+      uses: appleboy/ssh-action@v0.1.5
       with:
         host: ${{ secrets.AWS_SERVER_IP }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.AWS_SSH_KEY }}
         script: |
+          # Устанавливаем обновления и зависимости
           sudo apt update
-          sudo apt install -y docker.io docker-compose
-
-          docker-compose down || true
-          docker-compose pull
-          docker-compose up -d
+          sudo apt install -y python3 python3-pip sqlite3 docker.io nginx
+  
+          # Проверяем Docker
+          if ! [ -x "$(command -v docker)" ]; then
+            echo "Docker not found, installing..."
+            sudo apt install -y docker.io
+          fi
+  
+          # Останавливаем все контейнеры перед развертыванием
+          if [ "$(docker ps -q)" ]; then
+            sudo docker stop $(docker ps -q) || true
+          fi
+  
+          # Удаляем все контейнеры
+          if [ "$(docker ps -aq)" ]; then
+            sudo docker rm $(docker ps -aq) || true
+          fi
+  
+          # Удаляем старый контейнер с именем booking_app, если он существует
+          sudo docker rm -f booking_app || true
+  
+          # Запускаем новый контейнер из Docker Hub
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
+          sudo docker run -d -p 5000:5000 --name booking_app \
+            ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
