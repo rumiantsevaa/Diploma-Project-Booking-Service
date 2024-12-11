@@ -58,7 +58,7 @@ jobs:
             fi
 
             # Получаем SSL-сертификаты (заменяем EMAIL_FOR_CERTBOT и домен на переменные)
-            sudo certbot certonly --standalone -n --agree-tos --email EMAIL_FOR_CERTBOT -d www.bbooking.pp.ua
+            sudo certbot certonly --standalone -n --agree-tos --email secrets.EMAIL_FOR_CERTBOT -d www.bbooking.pp.ua
 
             # Удаляем старый проект
             sudo docker stop booking_app || true
