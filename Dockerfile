@@ -1,35 +1,23 @@
-# Базовый образ Python для Flask
-FROM python:3.10-slim as python-base
+# Базовый образ Python
+FROM python:3.10-slim
 
-# Устанавливаем рабочую директорию
+# Устанавливаем зависимости
 WORKDIR /app
-
-# Копируем зависимости
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем проект
+# Копируем проект в контейнер
 COPY . .
 
-# Устанавливаем Gunicorn
-RUN pip install gunicorn
-
-# Указываем порт Flask
-EXPOSE 8000
-
-# Собираем образ для запуска Flask
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
-
-# ---------
-
-# Базовый образ Nginx
-FROM nginx:stable-alpine as nginx-base
+# Устанавливаем Nginx
+RUN apt-get update && apt-get install -y nginx
 
 # Копируем конфигурацию Nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Указываем порт для внешних соединений
-EXPOSE 80
+# Указываем порты для Flask и Nginx
+EXPOSE 5000
+EXPOSE 443
 
-# Запуск Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Запускаем сначала init_db.py, затем app.py
+CMD python init_db.py && service nginx start && python app.py
