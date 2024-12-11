@@ -36,27 +36,36 @@ jobs:
 
     # 6. Подключаемся к серверу и выполняем команды
     - name: Deploy to AWS
-      env:
-        SERVER_IP: ${{ secrets.AWS_SERVER_IP }}
-        SERVER_USER: ${{ secrets.SERVER_USER }}
+    env:
+      SERVER_IP: ${{ secrets.AWS_SERVER_IP }}
+      SERVER_USER: ${{ secrets.SERVER_USER }}
       run: |
         ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << 'EOF'
           # Устанавливаем обновления и зависимости
           sudo apt update
           sudo apt install -y python3 python3-pip sqlite3 docker.io
-
-          # Проверяем Docker
-          if ! [ -x "$(command -v docker)" ]; then
-            echo "Docker not found, installing..."
-            sudo apt install -y docker.io
-          fi
-
-          # Останавливаем все контейнеры перед развертыванием
+  
+        # Проверяем Docker
+        if ! [ -x "$(command -v docker)" ]; then
+          echo "Docker not found, installing..."
+          sudo apt install -y docker.io
+        fi
+  
+        # Останавливаем все контейнеры перед развертыванием
+        if [ "$(docker ps -q)" ]; then
           sudo docker stop $(docker ps -q) || true
+        fi
+  
+        # Удаляем все контейнеры
+        if [ "$(docker ps -aq)" ]; then
           sudo docker rm $(docker ps -aq) || true
-
-          # Запускаем новый контейнер из Docker Hub
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
-          sudo docker run -d -p 443:443 --name booking_app \
-            ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
+        fi
+  
+        # Удаляем старый контейнер с именем booking_app, если он существует
+        sudo docker rm -f booking_app || true
+  
+        # Запускаем новый контейнер из Docker Hub
+        sudo docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
+        sudo docker run -d -p 443:443 --name booking_app \
+          ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
         EOF
