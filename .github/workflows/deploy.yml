@@ -51,9 +51,9 @@ jobs:
             sudo apt install -y docker.io
           fi
 
-          # Удаляем старый проект
-          sudo docker stop booking_app || true
-          sudo docker rm booking_app || true
+          # Останавливаем все контейнеры перед развертыванием
+          sudo docker stop $(docker ps -q) || true
+          sudo docker rm $(docker ps -aq) || true
 
           # Запускаем новый контейнер из Docker Hub
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
