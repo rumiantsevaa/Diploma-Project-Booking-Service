@@ -37,5 +37,5 @@ def book_hotel(hotel_id):
     return jsonify({"message": "Successfully Booked"}), 200
 
 if __name__ == '__main__':
-    # Инициализация базы данных (как в предыдущем варианте)
-    app.run(debug=True)
+
+    app.run(debug=True, host='0.0.0.0', port=80)
