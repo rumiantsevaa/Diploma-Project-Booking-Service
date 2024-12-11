@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import sqlite3
 import re
-import ssl
 import os
 
 app = Flask(__name__)
@@ -39,7 +38,7 @@ def book_hotel(hotel_id):
     return jsonify({"message": "Successfully Booked"}), 200
 
 if __name__ == '__main__':
-    # Проверяем наличие сертификатов
+    # Запускаем Flask на HTTPS (если сертификаты уже есть на сервере)
     cert_path = "/etc/letsencrypt/live/www.bbooking.pp.ua/fullchain.pem"
     key_path = "/etc/letsencrypt/live/www.bbooking.pp.ua/privkey.pem"
 
@@ -49,4 +48,4 @@ if __name__ == '__main__':
         context.load_cert_chain(certfile=cert_path, keyfile=key_path)
         app.run(host="0.0.0.0", port=443, ssl_context=context)
     else:
-        raise FileNotFoundError("SSL certificates not found. Please ensure Certbot has generated them.")
+        app.run(host="0.0.0.0", port=443)  # Без SSL сертификатов
