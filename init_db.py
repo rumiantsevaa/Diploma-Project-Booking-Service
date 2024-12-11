@@ -25,9 +25,6 @@ CREATE TABLE IF NOT EXISTS bookings (
 )
 ''')
 
-# Очистка существующих записей
-cursor.execute('DELETE FROM hotels')
-
 # В init_db.py добавим путь к картинкам
 cursor.execute('PRAGMA table_info(hotels)')
 columns = [col[1] for col in cursor.fetchall()]
