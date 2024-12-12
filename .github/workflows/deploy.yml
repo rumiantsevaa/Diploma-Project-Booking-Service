@@ -1,4 +1,4 @@
-name: Deploy to AWS and Push Docker Image
+name: Deploy Nginx to AWS
 
 on:
   push:
@@ -10,65 +10,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Клонируем репозиторий
+    # Checkout кода
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Настройка SSH
-    - name: Setup SSH
-      uses: webfactory/ssh-agent@v0.5.3
+    # Вход в DockerHub (если требуется)
+    - name: Log in to DockerHub
+      uses: docker/login-action@v2
       with:
-        ssh-private-key: ${{ secrets.AWS_SSH_KEY }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # Логинимся в Docker Hub
-    - name: Log in to Docker Hub
-      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+    # Сборка Docker-образа
+    - name: Build Docker image
+      run: docker build -t my-nginx .
 
-    # Собираем Docker-образ
-    - name: Build Docker Image
-      run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/booking_app:latest .
+    # Отправка образа в DockerHub (опционально)
+    - name: Push Docker image
+      run: docker push my-nginx:latest
 
-    # Публикуем Docker-образ на Docker Hub
-    - name: Push Docker Image to Docker Hub
-      run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
-
-    # Подключаемся к серверу и выполняем команды
+    # Развертывание на сервере AWS
     - name: Deploy to AWS
       env:
-        SERVER_IP: ${{ secrets.AWS_SERVER_IP }}
+        AWS_SERVER_IP: ${{ secrets.AWS_SERVER_IP }}
+        AWS_SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
         SERVER_USER: ${{ secrets.SERVER_USER }}
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.AWS_SERVER_IP }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.AWS_SSH_KEY }}
-        script: |
-          # Устанавливаем обновления и зависимости
-          sudo apt update
-          sudo apt install -y python3 python3-pip sqlite3 docker.io nginx
-  
-          # Проверяем Docker
-          if ! [ -x "$(command -v docker)" ]; then
-            echo "Docker not found, installing..."
-            sudo apt install -y docker.io
-          fi
-  
-          # Останавливаем все контейнеры перед развертыванием
-          if [ "$(docker ps -q)" ]; then
-            sudo docker stop $(docker ps -q) || true
-          fi
-  
-          # Удаляем все контейнеры
-          if [ "$(docker ps -aq)" ]; then
-            sudo docker rm $(docker ps -aq) || true
-          fi
-  
-          # Удаляем старый контейнер с именем booking_app, если он существует
-          sudo docker rm -f booking_app || true
-  
-          # Запускаем новый контейнер из Docker Hub
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
-          sudo docker run -d -p 5000:5000 --name booking_app \
-            ${{ secrets.DOCKER_USERNAME }}/booking_app:latest
+      run: |
+        echo "${{ secrets.AWS_SSH_KEY }}" > aws_key.pem
+        chmod 600 aws_key.pem
+        ssh -o StrictHostKeyChecking=no -i aws_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
+          docker pull my-nginx:latest
+          docker stop nginx || true
+          docker rm nginx || true
+          docker run -d --name nginx -p 80:80 my-nginx:latest
+        EOF
