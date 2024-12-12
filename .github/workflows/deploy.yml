@@ -10,37 +10,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout кода
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Вход в DockerHub (если требуется)
-    - name: Log in to DockerHub
-      uses: docker/login-action@v2
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        ssh-private-key: ${{ secrets.AWS_SSH_KEY }}
 
-    # Сборка Docker-образа
-    - name: Build Docker image
-      run: docker build -t my-nginx .
-
-    # Отправка образа в DockerHub (опционально)
-    - name: Push Docker image
-      run: docker push my-nginx:latest
-
-    # Развертывание на сервере AWS
-    - name: Deploy to AWS
-      env:
-        AWS_SERVER_IP: ${{ secrets.AWS_SERVER_IP }}
-        AWS_SSH_KEY: ${{ secrets.AWS_SSH_KEY }}
-        SERVER_USER: ${{ secrets.SERVER_USER }}
+    - name: Copy Dockerfile to AWS
       run: |
-        echo "${{ secrets.AWS_SSH_KEY }}" > aws_key.pem
-        chmod 600 aws_key.pem
-        ssh -o StrictHostKeyChecking=no -i aws_key.pem ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
-          docker pull my-nginx:latest
-          docker stop nginx || true
-          docker rm nginx || true
-          docker run -d --name nginx -p 80:80 my-nginx:latest
+        scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa Dockerfile ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }}:~/
+
+    - name: Connect to AWS and deploy Nginx
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
+          # Убедимся, что Docker установлен
+          sudo apt-get update && sudo apt-get install -y docker.io
+
+          # Удаляем старые контейнеры и образы
+          sudo docker stop nginx || true
+          sudo docker rm nginx || true
+          sudo docker rmi nginx:latest || true
+
+          # Собираем новый образ и запускаем контейнер
+          sudo docker build -t nginx:latest .
+          sudo docker run -d --name nginx -p 80:80 nginx:latest
         EOF
