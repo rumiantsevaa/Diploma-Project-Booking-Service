@@ -20,4 +20,8 @@ Cloudflare’s security and performance features are active, including HTTPS enc
 GitHub Pages automatically builds and deploys the site whenever changes are made to the main branch on GitHub in the /docs folder, ensuring the site is always up to date with the latest changes.
 
 11.12 
-The website migtation to AWS server.
+The website migration to AWS server.
+
+12.12 
+Nginx set up on AWS server.
+SSL Certificates for both www.bbooking.pp.ua/ bbooking.pp.ua issued.
