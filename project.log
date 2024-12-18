@@ -25,3 +25,8 @@ The website migration to AWS server.
 12.12 
 Nginx set up on AWS server.
 SSL Certificates for both www.bbooking.pp.ua/ bbooking.pp.ua issued.
+
+18.12
+Manual NGINX REVERSE PROXY set up confugured in container with SSL Certification on AWS (volumes for copying added), Docker Compose manual build and deployment done. 
+The general traffic flow will look like the following: Client -> NGINX -> WSGI -> Flask. Everything but certificates managed and set up inside the docker with external access via port forwarding. 
+Proceed automation + Repository file structure migration. 
