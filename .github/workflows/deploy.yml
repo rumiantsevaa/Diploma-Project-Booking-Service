@@ -1,4 +1,4 @@
-name: Deploy Nginx to AWS
+name: Deploy Docker Compose to AWS
 
 on:
   push:
@@ -18,22 +18,26 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.AWS_SSH_KEY }}
 
-    - name: Copy Dockerfile to AWS
-      run: |
-        scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa Dockerfile ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }}:~/
-
-    - name: Connect to AWS and deploy Nginx
+    - name: Stop running containers on AWS
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
-          # Убедимся, что Docker установлен
-          sudo apt-get update && sudo apt-get install -y docker.io
+        docker compose down
+        EOF
 
-          # Удаляем старые контейнеры и образы
-          sudo docker stop nginx || true
-          sudo docker rm nginx || true
-          sudo docker rmi nginx:latest || true
+    - name: Copy repository files to AWS
+      run: |
+        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./ ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }}:~/project
 
-          # Собираем новый образ и запускаем контейнер
-          sudo docker build -t nginx:latest .
-          sudo docker run -d --name nginx -p 80:80 nginx:latest
+    - name: Build Docker Compose on AWS
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
+        cd ~/project
+        docker compose build
+        EOF
+
+    - name: Deploy Docker Compose on AWS
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
+        cd ~/project
+        docker compose up -d
         EOF
