@@ -30,3 +30,29 @@ SSL Certificates for both www.bbooking.pp.ua/ bbooking.pp.ua issued.
 Manual NGINX REVERSE PROXY set up confugured in container with SSL Certification on AWS (volumes for copying added), Docker Compose manual build and deployment done. 
 The general traffic flow will look like the following: Client -> NGINX -> WSGI -> Flask. Everything but certificates managed and set up inside the docker with external access via port forwarding. 
 Proceed automation + Repository file structure migration. 
+
+MAJOR PROJECT LOG UPDATE:
+
+Current Status:
+The website is fully operational and accessible at both https://bbooking.pp.ua and https://www.bbooking.pp.ua.
+SSL enforcement is configured, ensuring all traffic is securely redirected to https:// with no access allowed via http://.
+Both www and non-www segments are functional and properly routed to the application.
+
+Deployment Process:
+Deployment is now fully automated and tested. Changes pushed to the main branch on GitHub trigger the following steps:
+*Connect to the AWS server via SSH.
+*Stop any currently running Docker containers (without deletion).
+*Sync repository files to the server.
+*Rebuild services with docker compose build.
+*Restart the application with docker compose up -d.
+
+Changes to Security Configuration:
+Cloudflare integration has been removed, including its security, performance, and DNS management features.
+This decision was made to transition to a self-hosted protection mechanism, allowing greater flexibility and control over traffic and security measures.
+
+Summary of Key Features:
+*Fully automated deployment pipeline.
+*Secure, SSL-enforced access to both www.bbooking.pp.ua and non-www bbooking.pp.ua domains (Redirects 80 => 443).
+*Auto NGINX reverse proxy configuration within a Docker container for external SSL management.
+*All critical components, except certificates, are handled inside Docker with external access enabled via port forwarding.
+
