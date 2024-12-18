@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -21,7 +21,8 @@ jobs:
     - name: Stop running containers on AWS
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
-        docker compose down
+        cd ~/project || true
+        docker compose down || true
         EOF
 
     - name: Copy repository files to AWS
