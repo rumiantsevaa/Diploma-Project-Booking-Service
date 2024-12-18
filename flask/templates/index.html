@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BBooking Diploma Project</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .hotel-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .hotel-card {
+            display: flex; flex-direction: column;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .hotel-card:hover {
+            transform: scale(1.05);
+        }
+        .hotel-image {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .book-btn {
+            margin-top: auto;
+            background: linear-gradient(45deg, #fc5c7d, #6a82fb);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .book-btn:hover {
+            transform: scale(1.1);
+        }
+        #bookingForm {
+            display: none;
+            background: rgba(255,255,255,0.9);
+            color: black;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            margin: 20px auto;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .input-field {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+            color: #333;
+            outline: none;
+        }
+        .input-field::placeholder {
+            color: #666;
+        }
+        #errorMessage {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .submit-btn {
+            background: linear-gradient(45deg, #fc5c7d, #6a82fb);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .submit-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="hotelList">
+        <h1 style="text-align: center; font-style: italic;">Welcome to BBooking, choose your Hotel.</h1>
+        <div class="hotel-grid">
+            {% for hotel in hotels %}
+            <div class="hotel-card">
+                <img src="{{ url_for('static', filename='images/' + hotel.image_path) }}" 
+                     alt="{{ hotel.name }}" 
+                     class="hotel-image">
+                <h2>{{ hotel.name }}</h2>
+                <p>{{ hotel.location }}</p>
+                <p>{{ hotel.description }}</p>
+                <p>Price per night: {{ hotel.price_per_night }}€</p>
+                <button class="book-btn" 
+                        onclick="showBookingForm({{ hotel.id }}, '{{ hotel.name }}')">
+                    Book
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="bookingForm">
+        <h1>Booking <span id="hotelNameBooking"></span></h1>
+        <p id="errorMessage"></p>
+        <form id="bookForm">
+            <input type="hidden" id="hotelId" name="hotel_id">
+            <input type="text" id="name" name="name" class="input-field" placeholder="Guest name" required>
+            <input type="text" id="phone" name="phone" class="input-field" placeholder="Guest number (380XXXXXXXXX)" required>
+            <button type="button" class="submit-btn" onclick="submitBooking()">Book</button>
+            <button type="button" class="submit-btn" onclick="showHotelList()">Return to Hotels</button>
+        </form>
+    </div>
+
+    <script>
+        function showBookingForm(hotelId, hotelName) {
+            document.getElementById('hotelList').style.display = 'none';
+            document.getElementById('bookingForm').style.display = 'block';
+            document.getElementById('hotelNameBooking').textContent = hotelName;
+            document.getElementById('hotelId').value = hotelId;
+        }
+
+        function showHotelList() {
+            document.getElementById('hotelList').style.display = 'block';
+            document.getElementById('bookingForm').style.display = 'none';
+            document.getElementById('errorMessage').textContent = '';
+        }
+
+        function submitBooking() {
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const hotelId = document.getElementById('hotelId').value;
+
+            const phonePattern = /^380\d{9}$/;
+            if (!phonePattern.test(phone)) {
+                document.getElementById('errorMessage').textContent = 'Enter correct phone number(ua country code with no + sign) 380XXXXXXXXX';
+                return;
+            }
+
+            fetch(`/book/${hotelId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Successfully Booked! Our manager will call you back in no time.');
+                    showHotelList();
+                } else {
+                    throw new Error('Booking error');
+                }
+            })
+            .catch(error => {
+                document.getElementById('errorMessage').textContent = 'Booking error. Try again later.';
+            });
+        }
+    </script>
+</body>
+</html>
