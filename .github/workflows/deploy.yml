@@ -29,12 +29,10 @@ jobs:
       run: |
         rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./ ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }}:~/project
 
-    - name: Build Docker Compose on AWS and Manage Certbot
+    - name: Build Docker Compose on AWS 
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
         cd ~/project
-        chmod +x ./manage_certbot.sh
-        sudo ./manage_certbot.sh
         docker compose build
         EOF
 
