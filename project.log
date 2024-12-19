@@ -56,3 +56,6 @@ Summary of Key Features:
 *Auto NGINX reverse proxy configuration within a Docker container for external SSL management.
 *All critical components, except certificates, are handled inside Docker with external access enabled via port forwarding.
 
+19.12
+Certbot renewal is set up via crontab.
+
