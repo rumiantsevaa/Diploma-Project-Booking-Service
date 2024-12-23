@@ -49,14 +49,14 @@ jobs:
     - name: Clone or Update Repository on AWS
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
-        if [ -d "/home/***/project/.git" ]; then
-          cd /home/***/project
+        if [ -d "/home/${{ secrets.SERVER_USER }}/project/.git" ]; then
+          cd /home/${{ secrets.SERVER_USER }}/project
           git reset --hard
           git clean -fd
           git pull
         else
-          rm -rf /home/***/project
-          git clone git@github.com:${{ secrets.GITHUB_REPOSITORY }} /home/***/project
+          rm -rf /home/${{ secrets.SERVER_USER }}/project
+          git clone git@github.com:${{ secrets.GITHUB_REPOSITORY }} /home/${{ secrets.SERVER_USER }}/project
         fi
         EOF
 
