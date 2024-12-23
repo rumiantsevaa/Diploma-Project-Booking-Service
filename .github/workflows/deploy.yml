@@ -60,7 +60,7 @@ jobs:
         cd ~/project
         echo "TAG=${{ env.NEW_VERSION }}" > .env  # Записываем тег в .env
         docker compose build
-        EOF
+        EOF 
 
     # 7. Публикуем образы на Docker Hub с новым тегом
     - name: Push Docker Images to Docker Hub
