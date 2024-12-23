@@ -87,7 +87,6 @@ jobs:
           
                 # Создаем необходимые директории если их нет
                 mkdir -p nginx
-                mkdir -p /etc/letsencrypt
                 
                 # Копируем конфигурационные файлы nginx если их нет
                 if [ ! -f "nginx/default.conf" ]; then
