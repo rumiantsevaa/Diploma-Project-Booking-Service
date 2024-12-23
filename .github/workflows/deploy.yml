@@ -32,8 +32,8 @@ jobs:
         NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
         echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-        - name: Update version files
-        run: |
+    - name: Update version files
+      run: |
         echo "${{ env.NEW_VERSION }}" > version.txt
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
