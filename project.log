@@ -101,3 +101,57 @@ The deployment process remains fully automated with the following workflow:
 3. Docker images are built and pushed with new version tags
 4. AWS server deploys updated containers
 
+--- DOCKER HUB LIMITATIONS OVERCOME --- 
+
+Docker Hub does not support uploading a complete compose.yml file as a single entity. 
+
+The project uses docker-compose.yaml to orchestrate two main services:
+* nginx-proxy (Frontend proxy server)
+* flask-app (Backend application)
+
+The solution is to store compose.yml file in a version-controlled repository like GitHub and reference the individual images hosted on Docker Hub within that file.
+
+Docker Hub and GitHub Integration:
+! The project uses both Docker Hub and GitHub because:
+
+* Docker images are stored on Docker Hub with versioning (using ${TAG} variable)
+* Configuration files and application code need to be mounted/copied from GitHub:
+  - /nginx/default.conf (Nginx configuration)
+  - SSL certificates (/etc/letsencrypt)
+  - Application code and requirements
+
+Key files cloned from GitHub:
+* Flask application: app.py (main application) - requirements.txt (dependencies)
+
+* Nginx configuration: default.conf (server configuration) - nginx.conf (main configuration) - start.sh (initialization script)
+
+Communication Flow: Client Request -> Nginx (443/80) -> Flask App (8000)
+
+! Security Features:
+- SSL/TLS encryption
+- Automatic HTTP to HTTPS redirection
+- Non-root users in containers
+- Proper file permissions
+- Health checks for both services
+
+Deployment Process:
+* Images are built and tagged with versions
+* Both images are pushed to Docker Hub (serpentariya/booking_nginx and serpentariya/booking_app)
+* During deployment, docker-compose pulls images from the Docker Hub and mounts necessary files from the cloned GitHub repository
+
+This architecture allows for:
+* Version control of both code and Docker images
+* Secure SSL termination
+* Proper separation of concerns between frontend proxy and application server
+* Easy deployment and scaling
+* Efficient resource utilization
+_______________________________________________________________________________________________________
+The split between Docker Hub (for images) and GitHub (for configuration and code) is necessary because:
+_______________________________________________________________________________________________________
+1. Docker Hub is optimized for storing and distributing container images
+2. GitHub provides version control for configuration and code files
+3. Some files (like SSL certificates) need to be mounted at runtime and shouldn't be baked into images
+4. This separation allows for better security and maintenance practices
+
+
+
