@@ -46,10 +46,18 @@ jobs:
         echo "New version will be: $NEW_VERSION"
 
     # 5. Копируем репозиторий на сервер AWS
-    - name: Clone repository on AWS
+    - name: Clone or Update Repository on AWS
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
-        git clone https://github.com/${{ secrets.GITHUB_REPOSITORY }} ~/project || (cd ~/project && git pull)
+        if [ -d "/home/***/project/.git" ]; then
+          cd /home/***/project
+          git reset --hard
+          git clean -fd
+          git pull
+        else
+          rm -rf /home/***/project
+          git clone git@github.com:${{ secrets.GITHUB_REPOSITORY }} /home/***/project
+        fi
         EOF
 
     # 6. Собираем Docker-образы на AWS с новым тегом
