@@ -29,10 +29,9 @@ jobs:
       run: |
         CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
         echo "Current version: $CURRENT_VERSION"
-        VERSION_PARTS=(${CURRENT_VERSION//[v.]/ })
-        MAJOR=${VERSION_PARTS[0]}
-        MINOR=${VERSION_PARTS[1]}
-        PATCH=${VERSION_PARTS[2]}
+        # Извлекаем числа, убирая 'v' в начале
+        VERSION_NUMBER=${CURRENT_VERSION#v}
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NUMBER"
         PATCH=$(echo "$PATCH + 0.1" | bc)
         NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
         echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
@@ -66,6 +65,7 @@ jobs:
     - name: Push Docker Images to Docker Hub
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
         cd ~/project
         docker compose push
         EOF
