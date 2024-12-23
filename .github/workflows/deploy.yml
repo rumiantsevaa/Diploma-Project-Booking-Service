@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'version.txt'  # Игнорировать изменения в version.txt
 
 jobs:
   deploy:
