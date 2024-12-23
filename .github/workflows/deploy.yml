@@ -53,4 +53,4 @@ jobs:
           cd ~/project
           echo "TAG=${{ env.NEW_VERSION }}" > .env
           docker compose pull
-          docker compose up -d --force-recreatee
+          docker compose up -d --force-recreate
