@@ -1,7 +1,7 @@
 services:
   nginx-proxy:
     build: nginx
-    image: ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${TAG}
+    image: serpentariya/booking_nginx:${TAG} # Используем переменную TAG
     restart: always
     volumes:
       - ./nginx/default.conf:/tmp/default.conf
@@ -22,7 +22,7 @@ services:
     command: /app/start.sh
   flask-app:
     build: flask
-    image: ${{ secrets.DOCKER_USERNAME }}/booking_app:${TAG}   # Используем переменную TAG
+    image: serpentariya/booking_app:${TAG}   # Используем переменную TAG
     restart: always
     ports: 
       - '8000:8000'
