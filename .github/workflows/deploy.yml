@@ -6,6 +6,7 @@ on:
       - main
     paths-ignore:
       - 'version.txt'  # Игнорировать изменения в version.txt
+      - 'project.log'  # Игнорировать изменения в project.log
 
 jobs:
   deploy:
