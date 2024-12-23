@@ -56,17 +56,24 @@ jobs:
           # Переходим в директорию
           cd ~/project
           
-          # Удаляем старые файлы если они есть
-          rm -rf *
-          
-          # Клонируем репозиторий
-          git clone https://github.com/rumiantsevaa/diploma-project-booking-service.git .
+          # Проверяем наличие git репозитория
+          if [ -d .git ]; then
+            # Если репозиторий существует, делаем pull
+            git fetch --all
+            git reset --hard origin/main
+          else
+            # Если репозитория нет, удаляем все и клонируем
+            rm -rf *
+            git clone https://github.com/rumiantsevaa/diploma-project-booking-service.git .
+          fi
           
           # Создаем .env файл с тегом версии
           echo "TAG=${{ env.NEW_VERSION }}" > .env
           
-          # Останавливаем и удаляем старые контейнеры если они есть
-          docker compose down --remove-orphans
+          # Останавливаем контейнеры если они запущены
+          if [ -f "docker-compose.yml" ] || [ -f "compose.yaml" ]; then
+            docker compose down --remove-orphans
+          fi
           
           # Удаляем неиспользуемые образы
           docker image prune -f
