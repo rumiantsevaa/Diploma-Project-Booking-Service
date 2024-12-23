@@ -88,6 +88,17 @@ Deploy to AWS:
 * Restart containers via docker compose
 The entire process is automated and runs on every push to the main branch. This ensures continuous delivery (CD) of the application to the production server.
 
+Added Personal Access Token to the Update version files block.
+The token is used for authorization when pushing changes to a new version.txt file containing the version tag back to the repository: git push ...//${{ secrets.PAT }}.
+----------------------------------------------------------------------------------------------------------------
+! Why use PAT and not GITHUB_TOKEN?
+GITHUB_TOKEN is automatically generated for each GitHub Actions run, but: * Limited to tasks inside Actions only.
+
+PAT allows you to:
+- Push changes and tags.
+- Work with other repositories.
+- Set access levels (e.g. read, write).
+----------------------------------------------------------------------------------------------------------------
 ! Fixed infinite version update loop in GitHub Actions workflow by adding paths-ignore for version.txt in deploy.yml.
 This improvement ensures that:
 - Version updates only trigger on actual code changes
