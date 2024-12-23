@@ -59,3 +59,45 @@ Summary of Key Features:
 19.12
 Certbot renewal is set up via crontab.
 
+23.12
+Deployment trigger:
+* Fired when pushing to the main branch
+* Ignores changes in the version.txt file
+Main steps:
+* Checkout code from the repository
+* Login to Docker Hub using secret credentials
+Versioning:
+* Generates a new Docker tag based on semantic versioning
+* Increments the patch version by 1
+* Updates the version.txt file
+* Creates a new git tag
+* Pushes changes back to the repository
+* Building and publishing Docker images:
+* Builds a Flask application and pushes to Docker Hub
+* Builds an Nginx image and pushes to Docker Hub
+* Uses the new version for image tags
+Deploy to AWS:
+* Connects to an AWS server via SSH
+* Creates/updates the project directory
+* Clones/updates the code from the repository
+* Gets the current version from version.txt
+* Creates a .env file with current version
+* Stops current containers
+* Cleans unused images
+* Pull new images
+* Restart containers via docker compose
+The entire process is automated and runs on every push to the main branch. This ensures continuous delivery (CD) of the application to the production server.
+
+! Fixed infinite version update loop in GitHub Actions workflow by adding paths-ignore for version.txt in deploy.yml.
+This improvement ensures that:
+- Version updates only trigger on actual code changes
+- Prevents recursive workflow triggers from version file updates
+- Maintains clean versioning history
+- Deployment automation continues to work as expected with version increments only on meaningful changes
+
+The deployment process remains fully automated with the following workflow:
+1. Code changes pushed to main branch trigger the workflow
+2. New version tag is generated and version.txt is updated
+3. Docker images are built and pushed with new version tags
+4. AWS server deploys updated containers
+
