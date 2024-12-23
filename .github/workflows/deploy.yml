@@ -70,12 +70,12 @@ jobs:
         script: |
           # Создаем директорию project если её нет
           mkdir -p ~/project
-          
-          # Копируем только compose.yaml
-          scp compose.yaml ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }}:~/project/
-          
+                    
           # Переходим в директорию
           cd ~/project
+
+          # Скачиваем compose.yaml из GitHub
+          curl -o compose.yaml https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/compose.yaml
           
           # Получаем версию из GitHub
           VERSION=$(curl -s https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/version.txt)
