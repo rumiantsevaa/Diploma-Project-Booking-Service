@@ -10,35 +10,78 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # 1. Клонируем репозиторий
     - name: Checkout code
       uses: actions/checkout@v3
 
+    # 2. Устанавливаем SSH-доступ
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.AWS_SSH_KEY }}
 
-    - name: Stop running containers on AWS
+    # 3. Логинимся в Docker Hub
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    # 4. Генерируем новый тег версии
+    - name: Generate new Docker tag
+      run: |
+        # Получаем последний тег версии или устанавливаем v1.0.0, если тегов нет
+        CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+        echo "Current version: $CURRENT_VERSION"
+        
+        # Извлекаем числа из версии
+        VERSION_PARTS=(${CURRENT_VERSION//[v.]/ })
+        MAJOR=${VERSION_PARTS[0]}
+        MINOR=${VERSION_PARTS[1]}
+        PATCH=${VERSION_PARTS[2]}
+        
+        # Увеличиваем PATCH на 0.1
+        PATCH=$(echo "$PATCH + 0.1" | bc)
+        
+        # Формируем новую версию
+        NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
+        echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+        echo "New version will be: $NEW_VERSION"
+
+    # 5. Копируем репозиторий на сервер AWS
+    - name: Clone repository on AWS
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
+        git clone https://github.com/${{ secrets.GITHUB_REPOSITORY }} ~/project || (cd ~/project && git pull)
+        EOF
+
+    # 6. Собираем Docker-образы на AWS с новым тегом
+    - name: Build Docker Images on AWS
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
+        cd ~/project
+        docker compose build --build-arg TAG=${{ env.NEW_VERSION }}
+        EOF
+
+    # 7. Публикуем образы на Docker Hub с новым тегом
+    - name: Push Docker Images to Docker Hub
+      run: |
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
+        cd ~/project
+        docker compose push
+        EOF
+
+    # 8. Останавливаем и удаляем старые контейнеры на AWS
+    - name: Stop and remove old containers on AWS
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
         cd ~/project || true
         docker compose down || true
+        docker system prune -f || true
         EOF
 
-    - name: Copy repository files to AWS
-      run: |
-        rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" ./ ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }}:~/project
-
-    - name: Build Docker Compose on AWS 
+    # 9. Загружаем образы с Docker Hub и запускаем контейнеры на AWS
+    - name: Deploy Docker Compose from Docker Hub
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
         cd ~/project
-        docker compose build
-        EOF
-
-    - name: Deploy Docker Compose on AWS
-      run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
-        cd ~/project
+        docker compose pull
         docker compose up -d
         EOF
