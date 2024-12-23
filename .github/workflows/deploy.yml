@@ -76,7 +76,9 @@ jobs:
 
           # Скачиваем compose.yaml из GitHub
           curl -o compose.yaml https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/compose.yaml
-          
+          curl -o ~/project/nginx/default.conf https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/nginx/default.conf
+          curl -o ~/project/nginx/nginx.conf https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/nginx/nginx.conf
+            
           # Получаем версию из GitHub
           VERSION=$(curl -s https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/version.txt)
           
