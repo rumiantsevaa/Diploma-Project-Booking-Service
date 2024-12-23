@@ -27,20 +27,13 @@ jobs:
     # 4. Генерируем новый тег версии
     - name: Generate new Docker tag
       run: |
-        # Получаем последний тег версии или устанавливаем v1.0.0, если тегов нет
         CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
         echo "Current version: $CURRENT_VERSION"
-        
-        # Извлекаем числа из версии
         VERSION_PARTS=(${CURRENT_VERSION//[v.]/ })
         MAJOR=${VERSION_PARTS[0]}
         MINOR=${VERSION_PARTS[1]}
         PATCH=${VERSION_PARTS[2]}
-        
-        # Увеличиваем PATCH на 0.1
         PATCH=$(echo "$PATCH + 0.1" | bc)
-        
-        # Формируем новую версию
         NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
         echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
         echo "New version will be: $NEW_VERSION"
@@ -90,6 +83,6 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
         cd ~/project
-        docker compose pull
-        docker compose up -d
+        docker compose pull --ignore-pull-failures  # Игнорируем ошибки, если образов нет
+        docker compose up -d --force-recreate       # Принудительно пересоздаем контейнеры
         EOF
