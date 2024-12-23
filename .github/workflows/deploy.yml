@@ -10,21 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Клонируем репозиторий
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # 2. Устанавливаем SSH-доступ
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.AWS_SSH_KEY }}
 
-    # 3. Логинимся в Docker Hub
     - name: Log in to Docker Hub
-      run: |
-        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin docker.io
-    # 4. Генерируем новый тег версии
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
     - name: Generate new Docker tag
       run: |
         CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
@@ -35,55 +31,19 @@ jobs:
         NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
         echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-    # 5. Копируем репозиторий на сервер AWS
-    - name: Clone or Update Repository on AWS
+    - name: Build and Push Docker Images
       run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
-        if [ -d "/home/${{ secrets.SERVER_USER }}/project/.git" ]; then
-          cd /home/${{ secrets.SERVER_USER }}/project
-          git reset --hard
-          git clean -fd
-          git pull
-        else
-          rm -rf /home/${{ secrets.SERVER_USER }}/project
-          git clone https://github.com/rumiantsevaa/Diploma-Project-Booking-Service /home/${{ secrets.SERVER_USER }}/project
-        fi
-        EOF
+        docker build -t seprentariya/booking_app:${{ env.NEW_VERSION }} ./flask
+        docker push seprentariya/booking_app:${{ env.NEW_VERSION }}
 
-    # 6. Собираем Docker-образы на AWS с новым тегом
-    - name: Build Docker Images on AWS
-      run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
-        cd ~/project
-        echo "TAG=${{ env.NEW_VERSION }}" > .env  # Записываем тег в .env
-        docker compose build
-        EOF
-
-    # 7. Публикуем образы на Docker Hub с новым тегом
-    - name: Push Docker Images to Docker Hub
-      run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
-        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin docker.io
-        cd ~/project
-        # Явно указываем полный путь к образу
-        docker tag project-flask-app:latest docker.io/seprentariya/booking_app:${{ env.NEW_VERSION }}
-        docker push docker.io/seprentariya/booking_app:${{ env.NEW_VERSION }}
-        EOF
-
-    # 8. Останавливаем и удаляем старые контейнеры на AWS
-    - name: Stop and remove old containers on AWS
-      run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
-        cd ~/project || true
-        docker compose down || true
-        docker system prune -f || true
-        EOF
-
-    # 9. Загружаем образы с Docker Hub и запускаем контейнеры на AWS
-    - name: Deploy Docker Compose from Docker Hub
-      run: |
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
-        cd ~/project
-        docker compose pull --ignore-pull-failures  # Игнорируем ошибки, если образов нет
-        docker compose up -d --force-recreate       # Принудительно пересоздаем контейнеры
-        EOF
+    - name: Deploy to AWS
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.AWS_SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.AWS_SSH_KEY }}
+        script: |
+          cd ~/project
+          echo "TAG=${{ env.NEW_VERSION }}" > .env
+          docker compose pull
+          docker compose up -d --force-recreate
