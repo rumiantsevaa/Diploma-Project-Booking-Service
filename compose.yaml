@@ -21,7 +21,7 @@ services:
     command: /app/start.sh
   flask-app:
     build: flask
-    image: "${{ secrets.DOCKER_USERNAME }}/flask-app:${TAG}"   # Используем переменную TAG
+    image: "seprentariya/flask-app:${TAG}"   # Используем переменную TAG
     restart: always
     ports: 
       - '8000:8000'
