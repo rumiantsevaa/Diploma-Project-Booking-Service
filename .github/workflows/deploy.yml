@@ -58,7 +58,8 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }} << EOF
         cd ~/project
-        docker compose build --build-arg TAG=${{ env.NEW_VERSION }}
+        echo "TAG=${{ env.NEW_VERSION }}" > .env  # Записываем тег в .env
+        docker compose build
         EOF
 
     # 7. Публикуем образы на Docker Hub с новым тегом
