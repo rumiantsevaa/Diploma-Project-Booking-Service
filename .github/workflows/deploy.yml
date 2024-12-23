@@ -50,7 +50,29 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.AWS_SSH_KEY }}
         script: |
+          # Создаем директорию project если её нет
+          mkdir -p ~/project
+          
+          # Переходим в директорию
           cd ~/project
+          
+          # Удаляем старые файлы если они есть
+          rm -rf *
+          
+          # Клонируем репозиторий
+          git clone https://github.com/rumiantsevaa/diploma-project-booking-service.git .
+          
+          # Создаем .env файл с тегом версии
           echo "TAG=${{ env.NEW_VERSION }}" > .env
+          
+          # Останавливаем и удаляем старые контейнеры если они есть
+          docker compose down --remove-orphans
+          
+          # Удаляем неиспользуемые образы
+          docker image prune -f
+          
+          # Подтягиваем новые образы
           docker compose pull
+          
+          # Запускаем контейнеры
           docker compose up -d --force-recreate
