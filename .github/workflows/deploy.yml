@@ -68,33 +68,37 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.AWS_SSH_KEY }}
         script: |
-          # Создаем директорию project если её нет
-          mkdir -p ~/project
-                    
-          # Переходим в директорию
-          cd ~/project
-
-          # Скачиваем compose.yaml из GitHub
-          curl -o compose.yaml https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/compose.yaml
-          curl -o ~/project/nginx/default.conf https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/nginx/default.conf
-          curl -o ~/project/nginx/nginx.conf https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/nginx/nginx.conf
+            # Создаем необходимые директории
+            mkdir -p ~/project
+            mkdir -p ~/project/nginx
             
-          # Получаем версию из GitHub
-          VERSION=$(curl -s https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/version.txt)
-          
-          # Создаем .env с версией из GitHub
-          echo "TAG=$VERSION" > .env
-          
-          # Останавливаем контейнеры если они запущены
-          if [ -f "docker-compose.yml" ] || [ -f "compose.yaml" ]; then
-            docker compose down --remove-orphans
-          fi
-          
-          # Удаляем неиспользуемые образы
-          docker image prune -f
-          
-          # Подтягиваем новые образы (serpentariya/booking_nginx:$VERSION и serpentariya/booking_app:$VERSION)
-          docker compose pull
-          
-          # Запускаем контейнеры с новыми образами nginx-proxy и flask-app с правильными настройками из compose.yaml
-          docker compose up -d --force-recreate
+            # Переходим в директорию
+            cd ~/project
+            
+            # Скачиваем compose.yaml
+            curl -o compose.yaml https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/compose.yaml
+            
+            # Создаем директорию nginx если её нет и скачиваем конфиги
+            mkdir -p nginx
+            curl -o nginx/default.conf https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/nginx/default.conf
+            curl -o nginx/nginx.conf https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/nginx/nginx.conf
+            
+            # Получаем версию из GitHub
+            VERSION=$(curl -s https://raw.githubusercontent.com/rumiantsevaa/diploma-project-booking-service/main/version.txt)
+            
+            # Создаем .env с версией из GitHub
+            echo "TAG=$VERSION" > .env
+            
+            # Останавливаем контейнеры если они запущены
+            if [ -f "docker-compose.yml" ] || [ -f "compose.yaml" ]; then
+              docker compose down --remove-orphans
+            fi
+            
+            # Удаляем неиспользуемые образы
+            docker image prune -f
+            
+            # Подтягиваем новые образы
+            docker compose pull
+            
+            # Запускаем контейнеры
+            docker compose up -d --force-recreate
