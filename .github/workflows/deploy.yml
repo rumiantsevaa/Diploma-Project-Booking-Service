@@ -29,12 +29,19 @@ jobs:
         NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
         echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-    - name: Build and Push Docker Images
+    - name: Build and Push Flask Image
       uses: docker/build-push-action@v4
       with:
         context: ./flask
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}
+
+    - name: Build and Push Nginx Image  
+      uses: docker/build-push-action@v4
+      with:
+        context: ./nginx
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.NEW_VERSION }}
 
     - name: Deploy to AWS
       uses: appleboy/ssh-action@v0.1.5
@@ -46,4 +53,4 @@ jobs:
           cd ~/project
           echo "TAG=${{ env.NEW_VERSION }}" > .env
           docker compose pull
-          docker compose up -d --force-recreate
+          docker compose up -d --force-recreatee
