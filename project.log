@@ -172,7 +172,7 @@ The directory structure simplified - create only the necessary ones.
 ├── compose.yaml
 └── nginx
     └── default.conf
-2 directories, 2 files (needed for compose.yaml ( WHICH IS A CRUCIAL HANDLER to operate and maintain pulled from Docker Hub images that were built and uploaded in previous steps as requested.) 
+2 directories, 2 files (needed for compose.yaml ( WHICH IS A CRUCIAL HANDLER to operate and maintain pulled from Docker Hub images that were built and uploaded in previous steps as requested.))
 
 * Operations Left:
 - Copying configuration files: compose.yaml and default.conf
@@ -182,6 +182,7 @@ The directory structure simplified - create only the necessary ones.
 - Loading new images
 - Starting new containers
 
-NOW I CAN OFFICIALLY ANNOUNCE : IT WORKS! WORKS! OPTIMIZED! OPTIMIZED! 
+NOW I CAN OFFICIALLY ANNOUNCE : IT WORKS! WORKS! OPTIMIZED! OPTIMIZED!  
+Current version is v1.0.27
 
 
