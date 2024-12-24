@@ -164,5 +164,24 @@ ________________________________________________________________________________
 3. Some files (like SSL certificates) need to be mounted at runtime and shouldn't be baked into images
 4. This separation allows for better security and maintenance practices
 
+24.12 
+deploy.yml changes: Deploy to AWS Job //
+Removed git clone/pull to only copy the necessary files via scp due to the project structure.
+The directory structure simplified - create only the necessary ones.
+.
+├── compose.yaml
+└── nginx
+    └── default.conf
+2 directories, 2 files (needed for compose.yaml ( WHICH IS A CRUCIAL HANDLER to operate and maintain pulled from Docker Hub images that were built and uploaded in previous steps as requested.) 
+
+* Operations Left:
+- Copying configuration files: compose.yaml and default.conf
+- Creating .env with version
+- Stopping old containers
+- Cleaning unused images
+- Loading new images
+- Starting new containers
+
+NOW I CAN OFFICIALLY ANNOUNCE : IT WORKS! WORKS! OPTIMIZED! OPTIMIZED! 
 
 
