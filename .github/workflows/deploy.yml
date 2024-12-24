@@ -61,6 +61,15 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.NEW_VERSION }}
 
+    - name: Copy configuration files
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.AWS_SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.AWS_SSH_KEY }}
+        source: "compose.yaml,nginx/default.conf"
+        target: "~/project/"
+
     - name: Deploy to AWS
       uses: appleboy/ssh-action@v0.1.5
       with:
@@ -68,48 +77,22 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.AWS_SSH_KEY }}
         script: |
-               # Создаем директорию project если её нет
-                mkdir -p ~/project
-                
-                # Переходим в директорию
-                cd ~/project
-                
-                # Проверяем наличие git репозитория
-                if [ -d .git ]; then
-                  # Если репозиторий существует, делаем pull
-                  git fetch --all
-                  git reset --hard origin/main
-                else
-                  # Если репозитория нет, удаляем все и клонируем
-                  rm -rf *
-                  git clone https://github.com/rumiantsevaa/diploma-project-booking-service.git .
-                fi
+          # Создаем минимальную структуру директорий
+          mkdir -p ~/project/nginx
           
-                # Создаем необходимые директории если их нет
-                mkdir -p nginx
-                
-                # Копируем конфигурационные файлы nginx если их нет
-                if [ ! -f "nginx/default.conf" ]; then
-                  cp nginx/default.conf nginx/default.conf
-                fi
-                if [ ! -f "nginx/nginx.conf" ]; then
-                  cp nginx/nginx.conf nginx/nginx.conf
-                fi
-                
-                # Создаем .env файл с тегом версии
-                echo "TAG=${{ env.NEW_VERSION }}" > .env
-                
-                # Останавливаем контейнеры если они запущены
-                if [ -f "docker-compose.yml" ] || [ -f "compose.yaml" ]; then
-                  docker compose down --remove-orphans
-                fi
-                
-                # Удаляем неиспользуемые образы
-                docker image prune -f
-                
-                # Подтягиваем образы из Docker Hub с нужным тегом
-                docker pull serpentariya/booking_nginx:${{ env.NEW_VERSION }}
-                docker pull serpentariya/booking_app:${{ env.NEW_VERSION }}
-                
-                # Запускаем контейнеры с образами из Docker Hub
-                docker compose up -d --force-recreate
+          # Создаем .env файл с версией
+          echo "TAG=${{ env.NEW_VERSION }}" > ~/project/.env
+          
+          # Переходим в директорию проекта
+          cd ~/project
+          
+          # Останавливаем контейнеры и чистим неиспользуемые образы
+          docker compose down --remove-orphans
+          docker system prune -f
+          
+          # Подтягиваем новые образы из Docker Hub
+          docker pull ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.NEW_VERSION }}
+          docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}
+          
+          # Запускаем новые контейнеры
+          docker compose up -d --force-recreate
