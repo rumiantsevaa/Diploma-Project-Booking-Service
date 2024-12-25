@@ -185,4 +185,9 @@ The directory structure simplified - create only the necessary ones.
 NOW I CAN OFFICIALLY ANNOUNCE : IT WORKS! WORKS! OPTIMIZED! OPTIMIZED!  
 Current version is v1.0.27
 
+25.12 
+Docker and Docker Hub check and installation added.
+Certificates paths optimized. Two domains[bbooking.pp.ua and www.bbooking.pp.ua] are covered by a single certificate. Issue was resolved days ago, but no-www domain was working on the old separated certificate until now. 
+
+
 
