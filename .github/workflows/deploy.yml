@@ -70,6 +70,34 @@ jobs:
         source: "compose.yaml,nginx/default.conf"
         target: "~/project/"
 
+    - name: Check and install Docker & Docker Compose
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.AWS_SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.AWS_SSH_KEY }}
+        script: |
+          # Check if Docker is installed
+          if ! command -v docker &> /dev/null; then
+            echo "Docker not found. Installing Docker..."
+            sudo apt-get update
+            sudo apt-get install -y docker.io
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            sudo usermod -aG docker $USER
+          else
+            echo "Docker is already installed"
+          fi
+
+          # Check if Docker Compose is installed
+          if ! command -v docker-compose &> /dev/null; then
+            echo "Docker Compose not found. Installing Docker Compose..."
+            sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+          else
+            echo "Docker Compose is already installed"
+          fi
+
     - name: Deploy to AWS
       uses: appleboy/ssh-action@v0.1.5
       with:
