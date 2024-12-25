@@ -186,8 +186,30 @@ NOW I CAN OFFICIALLY ANNOUNCE : IT WORKS! WORKS! OPTIMIZED! OPTIMIZED!
 Current version is v1.0.27
 
 25.12 
-Docker and Docker Hub check and installation added.
-Certificates paths optimized. Two domains[bbooking.pp.ua and www.bbooking.pp.ua] are covered by a single certificate. Issue was resolved days ago, but no-www domain was working on the old separated certificate until now. 
+Docker and Docker Hub check and installation on AWS Server added.
+Certificate paths optimized - now using a single SSL certificate for both domains (bbooking.pp.ua and www.bbooking.pp.ua). 
+Previously, no-www domain was using a separate certificate, but now both domains are covered by one certificate, which simplifies management and improves efficiency. 
+This is reflected in nginx/default.conf where both domains use the same certificate path:
+ssl_certificate /etc/letsencrypt/live/www.bbooking.pp.ua/fullchain.pem
+ssl_certificate_key /etc/letsencrypt/live/www.bbooking.pp.ua/privkey.pem 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*** SSL Certificate Management Automation Added to deploy.yml : *** 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+- Automated Certbot installation check and setup
+- Automated crontab management (installation, enabling, and starting of cron service)
+- Automated certificate renewal task configuration:
+  * Sets up automatic renewal at 3 AM on the first day of each month
+  * Replaces previous manual crontab setup from December 19th
+- Implemented intelligent certificate handling:
+  * Checks for existing certificate for both domains (bbooking.pp.ua and www.bbooking.pp.ua)
+  * Automatically renews existing certificate when needed
+  * Obtains new certificate if none exist(in case of server migration or project files corruption)
+  * Manages Docker containers during certificate operations (stops before renewal, starts after)
+  * Uses non-interactive mode with automated email configuration
+
+♡ This automation eliminates the need for manual SSL certificate management and ensures consistent certificate handling across all deployments. 
+♡ The system now automatically maintains SSL security without human intervention.
+
 
 
 
