@@ -124,3 +124,65 @@ jobs:
           
           # Запускаем новые контейнеры
           docker compose up -d --force-recreate
+
+    - name: SSL Certificate Management
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.AWS_SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.AWS_SSH_KEY }}
+        script: |
+          # Проверяем наличие certbot
+          if ! command -v certbot &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y certbot
+          fi
+
+          # Проверяем наличие crontab и устанавливаем при необходимости
+          if ! command -v crontab &> /dev/null; then
+            echo "Installing crontab..."
+            sudo apt-get update
+            sudo apt-get install -y cron
+            sudo systemctl enable cron
+            sudo systemctl start cron
+          fi
+          
+          # Проверяем наличие задачи в crontab
+          if ! sudo crontab -l 2>/dev/null | grep -q "certbot renew --quiet"; then
+            echo "Adding certbot renewal task to crontab..."
+            # Создаем новый crontab если он не существует или добавляем к существующему
+            (sudo crontab -l 2>/dev/null || echo "") | grep -v "certbot renew --quiet" | { cat; echo "0 3 1 * * certbot renew --quiet"; } | sudo crontab -
+            echo "Certbot renewal task added to crontab"
+          else
+            echo "Certbot renewal task already exists in crontab"
+          fi
+          
+          # Получаем информацию о сертификатах
+          CERT_INFO=$(sudo certbot certificates)
+          
+          # Проверяем наличие сертификата для обоих доменов
+          if echo "$CERT_INFO" | grep -q "Domains: bbooking.pp.ua www.bbooking.pp.ua"; then
+            echo "Certificate found for both domains. Attempting renewal if needed..."
+            # Останавливаем контейнеры перед обновлением
+            cd ~/project && docker compose down
+            
+            # Пробуем обновить сертификаты
+            sudo certbot renew
+            
+            # Запускаем контейнеры
+            cd ~/project && docker compose up -d
+          else
+            echo "No certificate found for both domains. Obtaining new certificate..."
+            # Останавливаем контейнеры
+            cd ~/project && docker compose down
+            
+            # Получаем новый сертификат
+            sudo certbot certonly --standalone \
+              -d bbooking.pp.ua -d www.bbooking.pp.ua \
+              --non-interactive --agree-tos \
+              -m ${{ secrets.EMAIL_FOR_CERTBOT }} \
+              --force-renewal
+            
+            # Запускаем контейнеры
+            cd ~/project && docker compose up -d
+          fi
