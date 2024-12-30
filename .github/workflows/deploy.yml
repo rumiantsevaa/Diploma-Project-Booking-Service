@@ -224,7 +224,7 @@ jobs:
                 sudo touch .zap/rules.tsv || true
                 sudo chmod -R 777 .zap || true
                 sudo touch report_json.json report_md.md report_html.html || true
-                sudo chmod 666 report_json.json report_md.md report_html.html || true
+                sudo chmod 777 report_json.json report_md.md report_html.html || true
         
         - name: ZAP Scan
           uses: zaproxy/action-baseline@v0.9.0
