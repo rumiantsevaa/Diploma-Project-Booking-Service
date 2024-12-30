@@ -186,3 +186,36 @@ jobs:
             # Запускаем контейнеры
             cd ~/project && docker compose up -d
           fi
+  security-checks:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
+  
+        # Базовый скан Trivy с выводом в консоль
+        - name: Run Trivy vulnerability scanner
+          uses: aquasecurity/trivy-action@master
+          with:
+            image-ref: '${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}'
+            format: 'table'
+            exit-code: '0'  # Чтобы деплой продолжался при нахождении уязвимостей
+            severity: 'CRITICAL,HIGH,MEDIUM'  # Уровень серьезности интересующих уязвимостей
+            timeout: '5m'
+  
+        # Базовый OWASP ZAP скан
+        - name: ZAP Scan
+          uses: zaproxy/action-baseline@v0.9.0
+          with:
+            target: 'https://bbooking.pp.ua/'
+            rules_file_name: '.zap/rules.tsv'
+            cmd_options: '-a'
+  
+        # Вывод результатов в консоль
+        - name: Print Security Results
+          if: always()
+          run: |
+            echo "=== Security Scan Summary ==="
+            echo "Severity Levels Checked: CRITICAL, HIGH, MEDIUM"
+            echo "Trivy scan completed with status: ${{ job.status }}"
+            echo "ZAP scan completed with status: ${{ job.status }}"
+            echo "=========================="
