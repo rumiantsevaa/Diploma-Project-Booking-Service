@@ -210,6 +210,12 @@ ssl_certificate_key /etc/letsencrypt/live/www.bbooking.pp.ua/privkey.pem
 ♡ This automation eliminates the need for manual SSL certificate management and ensures consistent certificate handling across all deployments. 
 ♡ The system now automatically maintains SSL security without human intervention.
 
+30.12
+CloudFlare integrated again as a possible future part of security and monitoring measures due to potential lack of OM on AWS. 
+Cloudflare log format Added to nginx.conf.
+Cloudflare IP ranges Added to default.conf
+FIX 301 for /health-check to bypass CloudFlare in default.conf due to CloudFlare's HTTPS redirect enforcement.
+Register at deploy.yml is more clear now. Less output to read. 
 
 
 
