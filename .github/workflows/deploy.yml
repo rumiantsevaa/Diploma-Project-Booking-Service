@@ -43,8 +43,8 @@ jobs:
         git add version.txt
         git commit -m "Update version to ${{ env.NEW_VERSION }}" || echo "No changes to commit"
         git tag ${{ env.NEW_VERSION }}
-        git push https://${{ secrets.PAT }}@github.com/rumiantsevaa/diploma-project-booking-service.git HEAD:main
-        git push https://${{ secrets.PAT }}@github.com/rumiantsevaa/diploma-project-booking-service.git ${{ env.NEW_VERSION }}
+        git push https://${{ secrets.PAT }}@github.com/rumiantsevaa/Diploma-Project-Booking-Service.git HEAD:main
+        git push https://${{ secrets.PAT }}@github.com/rumiantsevaa/Diploma-Project-Booking-Service.git ${{ env.NEW_VERSION }}
 
 
     - name: Build and Push Flask Image
