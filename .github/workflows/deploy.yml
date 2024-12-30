@@ -212,7 +212,7 @@ jobs:
             DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
             NEW_VERSION: ${{ env.NEW_VERSION }}
           with:
-            image-ref: ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}
+            image-ref: '${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}'
             format: 'table'
             exit-code: '0'  # Чтобы деплой продолжался при нахождении уязвимостей
             severity: 'CRITICAL,HIGH,MEDIUM'  # Уровень серьезности интересующих уязвимостей
