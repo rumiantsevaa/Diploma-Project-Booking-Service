@@ -197,6 +197,9 @@ jobs:
         # Базовый скан Trivy с выводом в консоль
         - name: Run Trivy vulnerability scanner
           uses: aquasecurity/trivy-action@master
+          env:
+            DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+            NEW_VERSION: ${{ env.NEW_VERSION }}
           with:
             image-ref: '${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}'
             format: 'table'
