@@ -220,11 +220,11 @@ jobs:
 
         - name: Prepare ZAP files and permissions
           run: |
-            sudo mkdir -p .zap
-            sudo touch .zap/rules.tsv
-            sudo chmod -R 777 .zap
-            sudo touch report_json.json report_md.md report_html.html
-            sudo chmod 666 report_json.json report_md.md report_html.html
+                sudo mkdir -p .zap || true
+                sudo touch .zap/rules.tsv || true
+                sudo chmod -R 777 .zap || true
+                sudo touch report_json.json report_md.md report_html.html || true
+                sudo chmod 666 report_json.json report_md.md report_html.html || true
     
         # Базовый OWASP ZAP скан
         - name: ZAP Scan
