@@ -217,5 +217,27 @@ Cloudflare IP ranges Added to default.conf
 FIX 301 for /health-check to bypass CloudFlare in default.conf due to CloudFlare's HTTPS redirect enforcement.
 Register at deploy.yml is more clear now. Less output to read. 
 
+Security Analysis Integration:
+Enhanced security measures implemented through two powerful scanning tools:
+1. Trivy Scanner:
+- Integrated for internal vulnerability scanning
+- Analyzes Docker containers and application dependencies
+- Detects vulnerabilities in code and dependencies
+- Currently operational and providing security insights
+- Configured to check CRITICAL, HIGH, and MEDIUM severity issues
+- Set to continue deployment even if vulnerabilities are found (non-blocking)
+
+2. OWASP ZAP (Zed Attack Proxy):
+- Implemented for external security analysis
+- Performs automated security testing of the live application
+- Scans for web application vulnerabilities
+- Currently experiencing some technical issues
+- Resolution in progress and expected soon
+- Will provide comprehensive external security assessment when fully operational
+Note: These security implementations do not affect the website's overall functionality and performance. 
+The application remains fully operational while these security measures are being fine-tuned. 
+
+!!! Trivy scans are successfully running in the deployment pipeline, while ZAP integration issues are being addressed.
+
 
 
