@@ -186,7 +186,9 @@ jobs:
             # Запускаем контейнеры
             cd ~/project && docker compose up -d
           fi
+          
   security-checks:
+      needs: deploy  # Чтобы проверки производились исключительно по успешной отработке deploy.yml
       runs-on: ubuntu-latest
       steps:
         - name: Checkout code
