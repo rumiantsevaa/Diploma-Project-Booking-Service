@@ -218,30 +218,40 @@ jobs:
             severity: 'CRITICAL,HIGH,MEDIUM'  # Уровень серьезности интересующих уязвимостей
             timeout: '5m'
 
-        - name: Prepare ZAP files and permissions
-          run: |
-                sudo mkdir -p .zap || true
-                sudo touch .zap/rules.tsv || true
-                sudo chmod -R 777 .zap || true
-                sudo touch report_json.json report_md.md report_html.html || true
-                sudo chmod 777 report_json.json report_md.md report_html.html || true
-        
         - name: ZAP Scan
           uses: zaproxy/action-baseline@v0.9.0
           with:
             target: 'https://bbooking.pp.ua/'
+            docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
             rules_file_name: '.zap/rules.tsv'
             cmd_options: '-a'
-            docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
             allow_issue_writing: true
             fail_action: false
-  
-        # Вывод результатов в консоль
-        - name: Print Security Results
+            
+        # Добавляем вывод результатов сканирования
+        - name: Print ZAP Scan Results
           if: always()
           run: |
-            echo "=== Security Scan Summary ==="
-            echo "Severity Levels Checked: CRITICAL, HIGH, MEDIUM"
-            echo "Trivy scan completed with status: ${{ job.status }}"
-            echo "ZAP scan completed with status: ${{ job.status }}"
-            echo "=========================="
+            echo "=== ZAP Security Scan Results ==="
+            echo "Time: $(date)"
+            echo "Target: https://bbooking.pp.ua/"
+            
+            if [ -f "zap-baseline-report.html" ]; then
+              echo "Scan Status: Completed"
+              echo "Full report available in artifacts"
+              
+              # Извлекаем и выводим основные результаты
+              ALERTS=$(grep -c "Alert" zap-baseline-report.html || echo "0")
+              HIGH=$(grep -c "High" zap-baseline-report.html || echo "0")
+              MEDIUM=$(grep -c "Medium" zap-baseline-report.html || echo "0")
+              LOW=$(grep -c "Low" zap-baseline-report.html || echo "0")
+              
+              echo "Summary:"
+              echo "- Total Alerts: $ALERTS"
+              echo "- High Risk: $HIGH"
+              echo "- Medium Risk: $MEDIUM"
+              echo "- Low Risk: $LOW"
+            else
+              echo "Scan Status: Failed or Report Not Generated"
+            fi
+            echo "================================"
