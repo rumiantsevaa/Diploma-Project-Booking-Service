@@ -193,7 +193,11 @@ jobs:
       steps:
         - name: Checkout code
           uses: actions/checkout@v3
-  
+          
+        - name: Get version
+          id: get_version
+          run: echo "VERSION=$(cat version.txt)" >> $GITHUB_ENV
+      
         # Базовый скан Trivy с выводом в консоль
         - name: Run Trivy vulnerability scanner
           uses: aquasecurity/trivy-action@master
