@@ -218,40 +218,25 @@ jobs:
             severity: 'CRITICAL,HIGH,MEDIUM'  # Уровень серьезности интересующих уязвимостей
             timeout: '5m'
 
-        - name: ZAP Scan
-          uses: zaproxy/action-baseline@v0.9.0
-          with:
-            target: 'https://bbooking.pp.ua/'
-            docker_name: 'ghcr.io/zaproxy/zaproxy:stable'
-            rules_file_name: '.zap/rules.tsv'
-            cmd_options: '-a'
-            allow_issue_writing: true
-            fail_action: false
-            
-        # Добавляем вывод результатов сканирования
-        - name: Print ZAP Scan Results
-          if: always()
+          # Replace the existing ZAP Scan with this updated version
+        - name: ZAP Scan with Official Stable Image
           run: |
-            echo "=== ZAP Security Scan Results ==="
-            echo "Time: $(date)"
-            echo "Target: https://bbooking.pp.ua/"
+           # Pull the official stable ZAP image
+           docker pull zaproxy/zap-stable
+          
+           # Run ZAP scan in a temporary container that will be removed after completion
+           docker run --rm \
+            -v $(pwd)/zap-report:/zap/wrk:rw \
+            zaproxy/zap-stable zap-baseline.py \
+            -t https://bbooking.pp.ua/ \
+            -r zap-report.html \
+            -I \
+            -j \
+            --auto
             
-            if [ -f "zap-baseline-report.html" ]; then
-              echo "Scan Status: Completed"
-              echo "Full report available in artifacts"
-              
-              # Извлекаем и выводим основные результаты
-              ALERTS=$(grep -c "Alert" zap-baseline-report.html || echo "0")
-              HIGH=$(grep -c "High" zap-baseline-report.html || echo "0")
-              MEDIUM=$(grep -c "Medium" zap-baseline-report.html || echo "0")
-              LOW=$(grep -c "Low" zap-baseline-report.html || echo "0")
-              
-              echo "Summary:"
-              echo "- Total Alerts: $ALERTS"
-              echo "- High Risk: $HIGH"
-              echo "- Medium Risk: $MEDIUM"
-              echo "- Low Risk: $LOW"
-            else
-              echo "Scan Status: Failed or Report Not Generated"
-            fi
-            echo "================================"
+        - name: Upload ZAP Report
+          if: always()
+          uses: actions/upload-artifact@v2
+          with:
+           name: zap-scan-report
+           path: zap-report/
