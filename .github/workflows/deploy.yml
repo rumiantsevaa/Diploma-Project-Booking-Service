@@ -226,17 +226,8 @@ jobs:
           
            # Run ZAP scan in a temporary container that will be removed after completion
            docker run --rm \
-            -v $(pwd)/zap-report:/zap/wrk:rw \
             zaproxy/zap-stable zap-baseline.py \
             -t https://bbooking.pp.ua/ \
-            -r zap-report.html \
             -I \
             -j \
             --auto
-            
-        - name: Upload ZAP Report
-          if: always()
-          uses: actions/upload-artifact@v3
-          with:
-           name: zap-scan-report
-           path: zap-report/
