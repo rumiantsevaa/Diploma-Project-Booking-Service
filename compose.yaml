@@ -10,7 +10,6 @@ services:
       - FLASK_SERVER_ADDR=flask-app:8000
     ports:
       - "80:80"
-      # ИЗМЕНИТЬ: Добавить порт 443
       - "443:443"
     depends_on:
       - flask-app
@@ -32,3 +31,12 @@ services:
       timeout: 10s
       retries: 3
     command: gunicorn -w 3 -t 60 -b 0.0.0.0:8000 app:app
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    restart: always
