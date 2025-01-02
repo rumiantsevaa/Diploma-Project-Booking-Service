@@ -239,5 +239,10 @@ The application remains fully operational while these security measures are bein
 
 !!! Trivy scans are successfully running in the deployment pipeline, while ZAP integration issues are being addressed.
 
+
+
 31.12
 ZAP is working properly, saving reports to the deploy output on GitHub actions. Always accessible and no memory on AWS needed. Happy New Year!  
+
+02.01
+Added segment for restriction of direct access to the website via IP. 
