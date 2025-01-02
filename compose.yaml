@@ -39,30 +39,28 @@ services:
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.retention.time=1d'        # Храним данные только за последние сутки
-      - '--storage.tsdb.retention.size=256MB'     # Максимальный размер хранилища
-      - '--web.listen-address=localhost:9090'     # Только локальный доступ
+      - '--storage.tsdb.retention.time=1d'
+      - '--storage.tsdb.retention.size=256MB'
+      - '--web.listen-address=localhost:9090'
     deploy:
       resources:
         limits:
           memory: 150M
-    network_mode: "host"                          # Для локального доступа
-  grafana:
-    image: grafana/grafana:latest
+    network_mode: "host"
+  dashy:
+    image: lissy93/dashy:latest
     restart: always
     volumes:
-      - grafana_data:/var/lib/grafana
+      - ./dashy/conf.yml:/app/public/conf.yml
+      - ./dashy/reports:/app/public/reports
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=your_password
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_AUTH_ANONYMOUS_ENABLED=false
-      - GF_SERVER_HTTP_ADDR=localhost     # Только локальный доступ
+      - NODE_ENV=production
+      - BASE_URL=/
     deploy:
       resources:
         limits:
           memory: 100M
-    network_mode: "host"                  # Для локального доступа
+    network_mode: "host"
 
 volumes:
   prometheus_data:
-  grafana_data:
