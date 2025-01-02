@@ -10,6 +10,7 @@ services:
       - FLASK_SERVER_ADDR=flask-app:8000
     ports:
       - "80:80"
+      # ИЗМЕНИТЬ: Добавить порт 443
       - "443:443"
     depends_on:
       - flask-app
@@ -24,44 +25,10 @@ services:
     image: serpentariya/booking_app:${TAG}   # Используем переменную TAG
     restart: always
     ports: 
-      - "8000:8000"
+      - '8000:8000'
     healthcheck:
       test: ["CMD-SHELL", "curl --silent --fail localhost:8000/flask-health-check || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 3
     command: gunicorn -w 3 -t 60 -b 0.0.0.0:8000 app:app
-  prometheus:
-    image: prom/prometheus:latest
-    restart: always
-    volumes:
-      - ./prometheus:/etc/prometheus
-      - prometheus_data:/prometheus
-    ports:
-      - "9090:9090"  # Явное мапирование порта
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.retention.time=1d'
-      - '--storage.tsdb.retention.size=256MB'
-    deploy:
-      resources:
-        limits:
-          memory: 150M
-  dashy:
-    image: lissy93/dashy:latest
-    restart: always
-    volumes:
-      - ./dashy/conf.yml:/app/public/conf.yml
-      - ./dashy/reports:/app/public/reports
-    environment:
-      - NODE_ENV=production
-      - BASE_URL=/
-    ports:
-      - "4000:4000"  # Мапируем порт 4000 на 80
-    deploy:
-      resources:
-        limits:
-          memory: 100M
-
-volumes:
-  prometheus_data:
