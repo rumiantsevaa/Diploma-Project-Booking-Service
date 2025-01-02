@@ -37,16 +37,16 @@ services:
     volumes:
       - ./prometheus:/etc/prometheus
       - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"  # Явное мапирование порта
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.retention.time=1d'
       - '--storage.tsdb.retention.size=256MB'
-      - '--web.listen-address=localhost:9090'
     deploy:
       resources:
         limits:
           memory: 150M
-    network_mode: "host"
   dashy:
     image: lissy93/dashy:latest
     restart: always
@@ -56,11 +56,12 @@ services:
     environment:
       - NODE_ENV=production
       - BASE_URL=/
+    ports:
+      - "4000:4000"  # Мапируем порт 4000 на 80
     deploy:
       resources:
         limits:
           memory: 100M
-    network_mode: "host"
 
 volumes:
   prometheus_data:
