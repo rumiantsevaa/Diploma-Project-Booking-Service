@@ -44,8 +44,6 @@ services:
       - "9090:9090"
     restart: always
     user: "nobody" 
-    volumes:
-      - ./prometheus:/etc/prometheus
       - prometheus_data:/prometheus 
 volumes:
   prometheus_data: {} # Определите volume
