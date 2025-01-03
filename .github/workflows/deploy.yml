@@ -61,39 +61,6 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.NEW_VERSION }}
 
-    - name: Prepare directories
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.AWS_SERVER_IP }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.AWS_SSH_KEY }}
-        script: |
-          # Create directories with proper permissions
-          mkdir -p ~/project/prometheus/rules
-          mkdir -p ~/project/prometheus/reports
-          chmod -R 755 ~/project/prometheus
-          chown -R $USER:$USER ~/project/prometheus
-
-    - name: Copy configuration files
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.AWS_SERVER_IP }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.AWS_SSH_KEY }}
-        source: "compose.yaml,nginx/default.conf,prometheus/prometheus.yml,prometheus/generate_report.sh,prometheus/rules/recording_rules.yml,prometheus/Dockerfile"
-        target: "~/project/"
-        strip_components: 0
-
-    - name: Set permissions
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.AWS_SERVER_IP }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.AWS_SSH_KEY }}
-        script: |
-          chmod -R 755 ~/project/prometheus
-          chmod +x ~/project/prometheus/generate_report.sh
-
     - name: Check and install Docker & Docker Compose
       uses: appleboy/ssh-action@v0.1.5
       with:
@@ -131,13 +98,6 @@ jobs:
         script: |
           # Создаем минимальную структуру директорий
           mkdir -p ~/project/nginx
-          mkdir -p ~/project/prometheus/rules
-          chmod 755 ~/project/prometheus
-          
-          # Копируем конфигурационные файлы
-          cp ~/project/prometheus/prometheus.yml ~/project/prometheus/
-          cp ~/project/prometheus/generate_report.sh ~/project/prometheus/
-          chmod +x ~/project/prometheus/generate_report.sh
           
           # Создаем .env файл с версией
           echo "TAG=${{ env.NEW_VERSION }}" > ~/project/.env
@@ -217,50 +177,6 @@ jobs:
             # Запускаем контейнеры
             cd ~/project && docker compose up -d
           fi
-
-    - name: Setup Prometheus
-      run: |
-        # Check if Prometheus is installed
-        if ! command -v prometheus &> /dev/null; then
-          # Install Prometheus
-          sudo apt-get update
-          sudo apt-get install -y prometheus
-          sudo apt-get install -y prometheus-node-exporter
-        fi
-        
-        # Configure Prometheus
-        sudo tee /etc/prometheus/prometheus.yml << EOF
-        global:
-          scrape_interval: 1h
-          evaluation_interval: 1h
-          
-        scrape_configs:
-          - job_name: 'node'
-            static_configs:
-              - targets: ['localhost:9100']
-        EOF
-        
-        # Configure data retention
-        sudo sed -i 's/--storage.tsdb.retention.time=.*$/--storage.tsdb.retention.time=24h/' /etc/default/prometheus
-        
-        # Restrict external access
-        sudo sed -i 's/--web.listen-address=.*$/--web.listen-address=localhost:9090/' /etc/default/prometheus
-        
-        # Setup cron job for metrics collection
-        CRON_CMD="0 * * * * /usr/bin/curl -s http://localhost:9090/api/v1/query?query=node_cpu_seconds_total > /var/log/prometheus/cpu_metrics.log && /usr/bin/curl -s http://localhost:9090/api/v1/query?query=node_filesystem_avail_bytes > /var/log/prometheus/disk_metrics.log"
-        
-        # Create metrics directory if it doesn't exist
-        sudo mkdir -p /var/log/prometheus
-        sudo chown prometheus:prometheus /var/log/prometheus
-        
-        # Add cron job if it doesn't exist
-        if ! sudo crontab -l | grep -q "prometheus"; then
-          (sudo crontab -l 2>/dev/null; echo "$CRON_CMD") | sudo crontab -
-        fi
-        
-        # Restart Prometheus service
-        sudo systemctl restart prometheus
-        sudo systemctl restart prometheus-node-exporter
           
   security-checks:
       needs: deploy  # Чтобы проверки производились исключительно по успешной отработке deploy.yml
