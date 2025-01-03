@@ -43,11 +43,11 @@ services:
     container_name: prometheus
     user: "65534:65534"  # Изменено с nobody:nobody на числовой ID
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./prometheus/rules:/etc/prometheus/rules
-      - ./prometheus/data:/prometheus/data
-      - ./prometheus/reports:/prometheus/reports
-      - ./prometheus/generate_report.sh:/prometheus/generate_report.sh
+      - ${PWD}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${PWD}/prometheus/rules:/etc/prometheus/rules
+      - ${PWD}/prometheus/data:/prometheus/data
+      - ${PWD}/prometheus/reports:/prometheus/reports
+      - ${PWD}/prometheus/generate_report.sh:/prometheus/generate_report.sh
     entrypoint: >
       sh -c "chmod +x /prometheus/generate_report.sh &&
              (crontab -l 2>/dev/null; echo '0 0 * * * /prometheus/generate_report.sh') | crontab - &&
