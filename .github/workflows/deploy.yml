@@ -178,7 +178,7 @@ jobs:
             cd ~/project && docker compose up -d
           fi
           
-  security-checks:
+  security-checks-and-monitoring:
       needs: deploy  # Чтобы проверки производились исключительно по успешной отработке deploy.yml
       runs-on: ubuntu-latest
       steps:
@@ -220,5 +220,22 @@ jobs:
             zaproxy/zap-stable zap-baseline.py \
             -t https://bbooking.pp.ua/ \
             -I \
+
             -j \
             --auto
+            
+        - name: Copy /netdata files
+          run: |
+            scp -r -o StrictHostKeyChecking=no netdata/* ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }}:~/project/netdata/
+  
+        - name: Setup Netdata
+          uses: appleboy/ssh-action@v0.1.5
+          with:
+            host: ${{ secrets.AWS_SERVER_IP }}
+            username: ${{ secrets.SERVER_USER }}
+            key: ${{ secrets.AWS_SSH_KEY }}
+            script: |
+              cd ~/project
+              chmod +x netdata/setup_netdata.sh
+              chmod +x netdata/save_dashboard.sh
+              ./netdata/setup_netdata.sh
