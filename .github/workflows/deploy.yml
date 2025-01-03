@@ -107,6 +107,10 @@ jobs:
         script: |
           # Создаем минимальную структуру директорий
           mkdir -p ~/project/nginx
+          mkdir -p ~/project/prometheus/data
+          chmod 777 ~/project/prometheus/data
+          mkdir -p ~/project/prometheus/reports
+          chmod 777 ~/project/prometheus/reports
           
           # Создаем .env файл с версией
           echo "TAG=${{ env.NEW_VERSION }}" > ~/project/.env
