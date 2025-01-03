@@ -41,38 +41,24 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
-    user: "65534:65534"  # Изменено с nobody:nobody на числовой ID
+    user: "65534:65534"  # nobody:nobody
     volumes:
-      - ${PWD}/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ${PWD}/prometheus/rules:/etc/prometheus/rules
-      - ${PWD}/prometheus/data:/prometheus/data
-      - ${PWD}/prometheus/reports:/prometheus/reports
-      - ${PWD}/prometheus/generate_report.sh:/prometheus/generate_report.sh
-    entrypoint: >
-      sh -c "chmod +x /prometheus/generate_report.sh &&
-             (crontab -l 2>/dev/null; echo '0 0 * * * /prometheus/generate_report.sh') | crontab - &&
-             /prometheus/generate_report.sh &&
-             /bin/prometheus --config.file=/etc/prometheus/prometheus.yml"
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
     ports:
       - "9090:9090"
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus/data"
-      - "--storage.tsdb.retention.time=1d"
-      - "--storage.tsdb.retention.size=100MB"
     networks:
       - backend
-
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: node-exporter
     restart: unless-stopped
-    volumes:
-      - '/:/host:ro,rslave'
-    command:
-      - '--path.rootfs=/host'
-    networks:
-      - backend
+
+volumes:
+  prometheus_data: {}
 
 networks:
   frontend:
