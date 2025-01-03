@@ -44,7 +44,7 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus/rules:/etc/prometheus/rules
-      - ./prometheus/generate_report.sh:/prometheus/generate_report.sh
+      - ./prometheus/reports:/prometheus/reports
     networks:
       - backend
     ports:
