@@ -48,7 +48,7 @@ services:
       - ./prometheus/data:/prometheus/data
       - ./prometheus/reports:/prometheus/reports
       - ./prometheus/generate_report.sh:/prometheus/generate_report.sh
-          entrypoint: >
+    entrypoint: >
       sh -c "chmod +x /prometheus/generate_report.sh &&
              (crontab -l 2>/dev/null; echo '0 0 * * * /prometheus/generate_report.sh') | crontab - &&
              /prometheus/generate_report.sh &&
