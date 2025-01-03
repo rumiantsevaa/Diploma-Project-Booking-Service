@@ -43,13 +43,14 @@ services:
     container_name: prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./prometheus/data:/prometheus
+      - ./prometheus/data:/prometheus/data
       - ./prometheus/reports:/prometheus/reports
     expose:
-      - "9090"
+      - "9090:9090"
     command:
-      - "--storage.tsdb.retention.size=200MB"
       - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus/data"  # Added explicit data path
+      - "--storage.tsdb.retention.size=200MB"
     networks:
       - backend
 
