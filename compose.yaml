@@ -44,6 +44,7 @@ services:
     user: "65534:65534"  # Изменено с nobody:nobody на числовой ID
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/rules:/etc/prometheus/rules
       - ./prometheus/data:/prometheus/data
       - ./prometheus/reports:/prometheus/reports
     ports:
@@ -51,9 +52,21 @@ services:
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus/data"
+      - "--storage.tsdb.retention.time=7d"
       - "--storage.tsdb.retention.size=200MB"
-      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
-      - "--web.console.templates=/usr/share/prometheus/consoles"
+    networks:
+      - backend
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - '/:/host:ro,rslave'
     networks:
       - backend
 
