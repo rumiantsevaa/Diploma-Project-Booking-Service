@@ -222,8 +222,14 @@ jobs:
               --auto
             
         - name: Copy /netdata files
-          run: |
-            scp -r -o StrictHostKeyChecking=no netdata/* ${{ secrets.SERVER_USER }}@${{ secrets.AWS_SERVER_IP }}:~/project/netdata/
+          uses: appleboy/scp-action@master
+          with:
+            host: ${{ secrets.AWS_SERVER_IP }}
+            username: ${{ secrets.SERVER_USER }}
+            key: ${{ secrets.AWS_SSH_KEY }}
+            source: "netdata/*"
+            target: "~/project/netdata/"
+            strip_components: 1
   
         - name: Setup Netdata
           uses: appleboy/ssh-action@v0.1.5
