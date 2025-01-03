@@ -37,19 +37,7 @@ services:
     command: gunicorn -w 3 -t 60 -b 0.0.0.0:8000 app:app
     networks:
       - backend
-
-  prometheus:
-    build:
-      context: ./prometheus
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./prometheus/rules:/etc/prometheus/rules
-      - ./prometheus/reports:/prometheus/reports
-    networks:
-      - backend
-    ports:
-      - "9090:9090"
-
+      
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node-exporter
