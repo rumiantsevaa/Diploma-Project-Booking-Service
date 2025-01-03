@@ -61,6 +61,19 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.NEW_VERSION }}
 
+    - name: Prepare directories
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.AWS_SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.AWS_SSH_KEY }}
+        script: |
+          # Create directories with proper permissions
+          mkdir -p ~/project/prometheus/rules
+          chmod 755 ~/project/prometheus
+          chmod 755 ~/project/prometheus/rules
+          sudo chown -R $USER:$USER ~/project
+
     - name: Copy configuration files
       uses: appleboy/scp-action@master
       with:
@@ -69,6 +82,16 @@ jobs:
         key: ${{ secrets.AWS_SSH_KEY }}
         source: "compose.yaml,nginx/default.conf,prometheus/prometheus.yml,prometheus/generate_report.sh,prometheus/rules/"
         target: "~/project/"
+
+    - name: Set permissions
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.AWS_SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.AWS_SSH_KEY }}
+        script: |
+          chmod -R 755 ~/project/prometheus
+          chmod +x ~/project/prometheus/generate_report.sh
 
     - name: Check and install Docker & Docker Compose
       uses: appleboy/ssh-action@v0.1.5
