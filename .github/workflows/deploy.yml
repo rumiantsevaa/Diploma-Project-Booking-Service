@@ -67,7 +67,7 @@ jobs:
         host: ${{ secrets.AWS_SERVER_IP }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.AWS_SSH_KEY }}
-        source: "compose.yaml,nginx/default.conf,prometheus/prometheus.yml"
+        source: "compose.yaml,nginx/default.conf,prometheus/prometheus.yml,prometheus/generate_report.sh,prometheus/rules/"
         target: "~/project/"
 
     - name: Check and install Docker & Docker Compose
@@ -107,10 +107,13 @@ jobs:
         script: |
           # Создаем минимальную структуру директорий
           mkdir -p ~/project/nginx
-          mkdir -p ~/project/prometheus
+          mkdir -p ~/project/prometheus/rules
           chmod 755 ~/project/prometheus
           
+          # Копируем конфигурационные файлы
           cp ~/project/prometheus/prometheus.yml ~/project/prometheus/
+          cp ~/project/prometheus/generate_report.sh ~/project/prometheus/
+          chmod +x ~/project/prometheus/generate_report.sh
           
           # Создаем .env файл с версией
           echo "TAG=${{ env.NEW_VERSION }}" > ~/project/.env
