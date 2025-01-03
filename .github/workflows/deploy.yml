@@ -67,7 +67,7 @@ jobs:
         host: ${{ secrets.AWS_SERVER_IP }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.AWS_SSH_KEY }}
-        source: "compose.yaml,nginx/default.conf"
+        source: "compose.yaml,nginx/default.conf,prometheus.yml"
         target: "~/project/"
 
     - name: Check and install Docker & Docker Compose
