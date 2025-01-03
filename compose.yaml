@@ -39,26 +39,27 @@ services:
       - backend
 
   prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    user: "65534:65534"  # nobody:nobody
+    build:
+      context: ./prometheus
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--web.enable-lifecycle'
-    ports:
-      - "9090:9090"
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/rules:/etc/prometheus/rules
+      - ./prometheus/generate_report.sh:/prometheus/generate_report.sh
     networks:
       - backend
-    restart: unless-stopped
+    ports:
+      - "9090:9090"
 
-volumes:
-  prometheus_data: {}
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /:/host:ro,rslave
+    command:
+      - '--path.rootfs=/host'
+    networks:
+      - backend
 
 networks:
   frontend:
