@@ -20,6 +20,11 @@ jobs:
         token: ${{ secrets.PAT }}
         fetch-depth: 0
 
+    - name: Store current version
+      run: |
+        CURRENT_VERSION=$(cat version.txt)
+        echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
+
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
       with:
@@ -34,6 +39,12 @@ jobs:
         PATCH=$(echo $CURRENT_VERSION | sed 's/v\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\3/')
         NEW_PATCH=$((PATCH + 1))
         NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+        # Проверка существования тега
+        if git rev-parse $NEW_VERSION >/dev/null 2>&1; then
+          TIMESTAMP=$(date +%s)
+          NEW_VERSION="${NEW_VERSION}-${TIMESTAMP}"
+        fi
+        
         echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
     - name: Update version files
@@ -100,7 +111,14 @@ jobs:
           # Создаем минимальную структуру директорий
           mkdir -p ~/project/nginx
           
-          # Создаем .env файл с версией
+          # Сохраняем текущую версию для отката
+          if [ -f ~/project/.env ]; then
+            cp ~/project/.env ~/project/.env.backup
+            CURRENT_VERSION=$(grep TAG ~/project/.env | cut -d'=' -f2)
+            echo "Previous version: $CURRENT_VERSION" >> ~/project/deployment.log
+          fi
+          
+          # Создаем .env файл с новой версией
           echo "TAG=${{ env.NEW_VERSION }}" > ~/project/.env
           
           # Переходим в директорию проекта
@@ -114,8 +132,30 @@ jobs:
           docker pull ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.NEW_VERSION }}
           docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}
           
-          # Запускаем новые контейнеры
-          docker compose up -d --force-recreate
+          # Пробуем запустить новые контейнеры
+          if docker compose up -d --force-recreate; then
+            # Проверяем статус контейнеров
+            sleep 15
+            if docker compose ps | grep -q "Up"; then
+              echo "Deployment successful" >> ~/project/deployment.log
+              # Удаляем backup если всё успешно
+              rm -f ~/project/.env.backup
+            else
+              echo "Container health check failed, rolling back..." >> ~/project/deployment.log
+              # Восстанавливаем предыдущую версию
+              cp ~/project/.env.backup ~/project/.env
+              docker compose down
+              docker compose up -d
+              exit 1
+            fi
+          else
+            echo "Deployment failed, rolling back..." >> ~/project/deployment.log
+            # Восстанавливаем предыдущую версию
+            cp ~/project/.env.backup ~/project/.env
+            docker compose down
+            docker compose up -d
+            exit 1
+          fi
 
     - name: SSL Certificate Management
       uses: appleboy/ssh-action@v0.1.5
