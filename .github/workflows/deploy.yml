@@ -217,6 +217,50 @@ jobs:
             # Запускаем контейнеры
             cd ~/project && docker compose up -d
           fi
+
+    - name: Setup Prometheus
+      run: |
+        # Check if Prometheus is installed
+        if ! command -v prometheus &> /dev/null; then
+          # Install Prometheus
+          sudo apt-get update
+          sudo apt-get install -y prometheus
+          sudo apt-get install -y prometheus-node-exporter
+        fi
+        
+        # Configure Prometheus
+        sudo tee /etc/prometheus/prometheus.yml << EOF
+        global:
+          scrape_interval: 1h
+          evaluation_interval: 1h
+          
+        scrape_configs:
+          - job_name: 'node'
+            static_configs:
+              - targets: ['localhost:9100']
+        EOF
+        
+        # Configure data retention
+        sudo sed -i 's/--storage.tsdb.retention.time=.*$/--storage.tsdb.retention.time=24h/' /etc/default/prometheus
+        
+        # Restrict external access
+        sudo sed -i 's/--web.listen-address=.*$/--web.listen-address=localhost:9090/' /etc/default/prometheus
+        
+        # Setup cron job for metrics collection
+        CRON_CMD="0 * * * * /usr/bin/curl -s http://localhost:9090/api/v1/query?query=node_cpu_seconds_total > /var/log/prometheus/cpu_metrics.log && /usr/bin/curl -s http://localhost:9090/api/v1/query?query=node_filesystem_avail_bytes > /var/log/prometheus/disk_metrics.log"
+        
+        # Create metrics directory if it doesn't exist
+        sudo mkdir -p /var/log/prometheus
+        sudo chown prometheus:prometheus /var/log/prometheus
+        
+        # Add cron job if it doesn't exist
+        if ! sudo crontab -l | grep -q "prometheus"; then
+          (sudo crontab -l 2>/dev/null; echo "$CRON_CMD") | sudo crontab -
+        fi
+        
+        # Restart Prometheus service
+        sudo systemctl restart prometheus
+        sudo systemctl restart prometheus-node-exporter
           
   security-checks:
       needs: deploy  # Чтобы проверки производились исключительно по успешной отработке deploy.yml
