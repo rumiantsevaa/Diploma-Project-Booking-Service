@@ -1,7 +1,7 @@
 services:
   nginx-proxy:
     build: nginx
-    image: serpentariya/booking_nginx:${TAG} # Используем переменную TAG
+    image: serpentariya/booking_nginx:${TAG}
     restart: always
     volumes:
       - ./nginx/default.conf:/tmp/default.conf
@@ -19,9 +19,13 @@ services:
       timeout: 10s
       retries: 3
     command: /app/start.sh
+    networks:
+      - frontend
+      - backend
+
   flask-app:
     build: flask
-    image: serpentariya/booking_app:${TAG}   # Используем переменную TAG
+    image: serpentariya/booking_app:${TAG}
     restart: always
     ports: 
       - '8000:8000'
@@ -31,4 +35,25 @@ services:
       timeout: 10s
       retries: 3
     command: gunicorn -w 3 -t 60 -b 0.0.0.0:8000 app:app
+    networks:
+      - backend
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    expose:
+      - "9090"
+    command:
+      - "--storage.tsdb.retention.size=200MB"
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    networks:
+      - backend
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+    internal: true
