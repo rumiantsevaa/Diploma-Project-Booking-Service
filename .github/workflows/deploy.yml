@@ -70,9 +70,9 @@ jobs:
         script: |
           # Create directories with proper permissions
           mkdir -p ~/project/prometheus/rules
-          chmod 755 ~/project/prometheus
-          chmod 755 ~/project/prometheus/rules
-          sudo chown -R $USER:$USER ~/project
+          mkdir -p ~/project/prometheus/reports
+          chmod -R 755 ~/project/prometheus
+          chown -R $USER:$USER ~/project/prometheus
 
     - name: Copy configuration files
       uses: appleboy/scp-action@master
@@ -80,8 +80,9 @@ jobs:
         host: ${{ secrets.AWS_SERVER_IP }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.AWS_SSH_KEY }}
-        source: "compose.yaml,nginx/default.conf,prometheus/prometheus.yml,prometheus/generate_report.sh,prometheus/rules/"
+        source: "compose.yaml,nginx/default.conf,prometheus/prometheus.yml,prometheus/generate_report.sh,prometheus/rules/recording_rules.yml,prometheus/Dockerfile"
         target: "~/project/"
+        strip_components: 0
 
     - name: Set permissions
       uses: appleboy/ssh-action@v0.1.5
