@@ -246,3 +246,68 @@ ZAP is working properly, saving reports to the deploy output on GitHub actions. 
 
 02.01
 Added segment for restriction of direct access to the website via IP. 
+
+03.01 
+``````````````````````
+~ Netdata Monitoring~ 
+``````````````````````
+Features of Netdata that were implemented in the project: 
+- Real-time performance monitoring system
+- Designed to collect and visualize system and application performance metrics
+- Has a built-in web interface for displaying data
+- Main configuration components (/netdata/netdata.conf):
+- Hostname is set to bbooking.pp.ua
+- Binding to local IP (127.0.0.1)
+- Web interface runs on port 19999
+- Health and registry modules are enabled
+- Plugins for monitoring processes (proc), disk space (diskspace) and cgroups are activated
+
+Automation and management:
+- Script setup_netdata.sh for automatic installation and configuration
+- save_dashboard.sh for periodic saving of dashboards was removed due to inefficiency 
+
+Collected metrics: CPU usage / Memory consumption / Disk / I/O (Input/Output) operations / Network traffic / Process monitoring / Disk space usage
+
+Security:
+
+! Access is limited only local host (127.0.0.1)
+! Web interface is only available locally
+! Static web server mode
+
+Advantages of choosing Netdata:
+- Real-time monitoring
+- Low overhead
+- A rich set of built-in metrics
+- Convenient data visualization
+
+CI/CD integration:
+
+`` Built-in installation in the deployment process
+`` Automatic recovery during migration
+`` Saving the configuration in the repository
+`` Quick deployment when needed
+
+Cloudflare as an additional monitoring layer:
+`` Availability monitoring
+`` Traffic analytics
+`` Performance metrics
+`` Request logging (a special log format is configured in nginx.conf)
+
+Built-in health checks:
+`` Health checks in Nginx (/health-check endpoints)
+`` SSL certificate monitoring
+`` Service availability checks
+
+! Optimal for a small EC2 instance:
+- Netdata is optimized for small resources
+- Local storage of only the necessary metrics
+- Load distribution between different tools
+- Efficient use of existing services (Cloudflare)
+
+Additional benefits: Automation of all processes / Minimal manual intervention / Quick recovery from failures  / Comprehensive approach to monitoring 
+
+This configuration fully meets the monitoring requirements, while effectively using the resources of a small EC2 instance.
+
+Additional: It is planned to add Netdata screenshots with examples of metrics collection. Possibility of using variety of plugins. 
+Possibility of customization via configuration files. 
+
