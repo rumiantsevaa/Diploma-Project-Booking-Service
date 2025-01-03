@@ -38,17 +38,6 @@ services:
     networks:
       - backend
       
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: node-exporter
-    restart: unless-stopped
-    volumes:
-      - /:/host:ro,rslave
-    command:
-      - '--path.rootfs=/host'
-    networks:
-      - backend
-
 networks:
   frontend:
     driver: bridge
