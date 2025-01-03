@@ -1,2 +1,4 @@
 project.log
 requirements.txt
+# Ignore dashboards folder
+netdata/dashboards/*
