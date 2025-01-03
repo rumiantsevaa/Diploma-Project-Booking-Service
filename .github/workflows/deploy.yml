@@ -241,5 +241,4 @@ jobs:
             script: |
               cd ~/project
               chmod +x netdata/setup_netdata.sh
-              chmod +x netdata/save_dashboard.sh
               ./netdata/setup_netdata.sh
