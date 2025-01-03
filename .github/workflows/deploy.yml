@@ -7,6 +7,7 @@ on:
     paths-ignore:
       - 'version.txt'  # Игнорировать изменения в version.txt
       - 'project.log'  # Игнорировать изменения в project.log
+      - 'netdata/dashboards/**'  # Игнорировать изменения в dashboards/
      
 jobs:
   deploy:
