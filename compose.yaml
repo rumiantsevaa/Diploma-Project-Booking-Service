@@ -43,17 +43,23 @@ services:
     container_name: prometheus
     user: "65534:65534"  # Изменено с nobody:nobody на числовой ID
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus/rules:/etc/prometheus/rules
       - ./prometheus/data:/prometheus/data
       - ./prometheus/reports:/prometheus/reports
+      - ./prometheus/generate_report.sh:/prometheus/generate_report.sh
+          entrypoint: >
+      sh -c "chmod +x /prometheus/generate_report.sh &&
+             (crontab -l 2>/dev/null; echo '0 0 * * * /prometheus/generate_report.sh') | crontab - &&
+             /prometheus/generate_report.sh &&
+             /bin/prometheus --config.file=/etc/prometheus/prometheus.yml"
     ports:
       - "9090:9090"
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus/data"
-      - "--storage.tsdb.retention.time=7d"
-      - "--storage.tsdb.retention.size=200MB"
+      - "--storage.tsdb.retention.time=1d"
+      - "--storage.tsdb.retention.size=100MB"
     networks:
       - backend
 
@@ -61,12 +67,10 @@ services:
     image: prom/node-exporter:latest
     container_name: node-exporter
     restart: unless-stopped
-    ports:
-      - "9100:9100"
-    command:
-      - '--path.rootfs=/host'
     volumes:
       - '/:/host:ro,rslave'
+    command:
+      - '--path.rootfs=/host'
     networks:
       - backend
 
