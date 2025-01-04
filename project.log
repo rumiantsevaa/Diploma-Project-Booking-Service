@@ -313,3 +313,4 @@ Possibility of customization via configuration files.
 
 04.01
 Netdata screenshots added.
+MINOR FIX: Update version to v1.0.132 -> NOW Trivy SCANS THE SAME BUILD AND NOT PREVIOUS -> Running Trivy with options: trivy image ***/booking_app:v1.0.132. 
