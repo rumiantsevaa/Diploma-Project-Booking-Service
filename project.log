@@ -311,3 +311,5 @@ This configuration fully meets the monitoring requirements, while effectively us
 Additional: It is planned to add Netdata screenshots with examples of metrics collection. Possibility of using variety of plugins. 
 Possibility of customization via configuration files. 
 
+04.01
+Netdata screenshots added.
