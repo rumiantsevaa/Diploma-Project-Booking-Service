@@ -12,6 +12,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Добавляем outputs для передачи версии
+    outputs:
+      version: ${{ env.NEW_VERSION }}
 
     steps:
     - name: Checkout code
@@ -29,12 +32,12 @@ jobs:
     - name: Generate new Docker tag
       run: |
         CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
-        MAJOR=$(echo $CURRENT_VERSION | sed 's/v\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\1/')
-        MINOR=$(echo $CURRENT_VERSION | sed 's/v\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\2/')
-        PATCH=$(echo $CURRENT_VERSION | sed 's/v\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\3/')
+        MAJOR_MINOR=$(echo $CURRENT_VERSION | cut -d. -f1-2)
+        PATCH=$(echo $CURRENT_VERSION | cut -d. -f3)
         NEW_PATCH=$((PATCH + 1))
-        NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
-        echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+        NEW_VERSION="${MAJOR_MINOR}.${NEW_PATCH}"
+        echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+        echo "$NEW_VERSION" > version.txt
 
     - name: Update version files
       run: |
@@ -213,7 +216,7 @@ jobs:
             DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
             NEW_VERSION: ${{ env.NEW_VERSION }}
           with:
-            image-ref: 'serpentariya/booking_app:${{ env.VERSION }}'
+            image-ref: 'serpentariya/booking_app:${{ needs.deploy.outputs.version }}'
             format: 'table'
             exit-code: '0'  # Чтобы деплой продолжался при нахождении уязвимостей
             severity: 'CRITICAL,HIGH,MEDIUM'  # Уровень серьезности интересующих уязвимостей
