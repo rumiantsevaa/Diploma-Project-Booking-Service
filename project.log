@@ -341,3 +341,23 @@ Benefits:
 
 This improvement allows the team to better communicate the nature and impact of changes through version numbers while maintaining the automated deployment process.
 Test is successful! v1.0.145 ->  v1.1.0 - (Minor)  Test for Major transition is not due yet.  v.2.0.0 will be very soon! Stay tuned. 
+
+--- Deployment Rerun Enhancement ---
+Added logic to check if a deployment is a rerun by verifying the existence of git tags
+If it's a rerun, the version.txt file remains unchanged to prevent conflicts
+This fixes the previous error: fatal: tag 'vX.X.X' already exists
+
+Added an alert system that notifies users when they're performing a rerun
+Automatically handles existing Docker images by removing them before recreation
+The logic is implemented in two main steps: Version Check Step | Docker Image Check Step
+
+These improvements ensure that:
+* Deployments can be safely rerun without version conflicts
+* Users are properly notified of rerun operations
+* Docker images are handled appropriately during reruns
+* The version control system maintains its integrity
+* This enhancement significantly improves the deployment workflow reliability and user experience when reruns are necessary.
+
+
+
+
