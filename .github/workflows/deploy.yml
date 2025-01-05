@@ -30,15 +30,35 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Generate new Docker tag
+      env:
+        VER_TYPE: 1  # Default value for patch version increment 
       run: |
         CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
-        MAJOR_MINOR=$(echo $CURRENT_VERSION | cut -d. -f1-2)
+        MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1 | tr -d 'v')
+        MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
         PATCH=$(echo $CURRENT_VERSION | cut -d. -f3)
-        NEW_PATCH=$((PATCH + 1))
-        NEW_VERSION="${MAJOR_MINOR}.${NEW_PATCH}"
+        
+        if [ "$VER_TYPE" = "1" ]; then
+          # Patch version increment (1.0.1 -> 1.0.2)
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+        elif [ "$VER_TYPE" = "2" ]; then
+          # Minor version increment (1.0.1 -> 1.1.0)
+          NEW_MINOR=$((MINOR + 1))
+          NEW_VERSION="v${MAJOR}.${NEW_MINOR}.0"
+        elif [ "$VER_TYPE" = "3" ]; then
+          # Major version increment (1.0.1 -> 2.0.0)
+          NEW_MAJOR=$((MAJOR + 1))
+          NEW_VERSION="v${NEW_MAJOR}.0.0"
+        else
+          # Default to patch increment if invalid VER_TYPE
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+        fi
+        
         echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
         echo "$NEW_VERSION" > version.txt
-
+    
     - name: Update version files
       run: |
         echo "${{ env.NEW_VERSION }}" > version.txt
