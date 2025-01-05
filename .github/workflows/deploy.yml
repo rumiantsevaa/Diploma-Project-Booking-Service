@@ -58,6 +58,27 @@ jobs:
         
         echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
         echo "$NEW_VERSION" > version.txt
+
+    - name: Check and delete existing Docker images if needed
+      run: |
+        # Функция для проверки и удаления образа
+        check_and_delete_image() {
+          local image=$1
+          local tag=$2
+          
+          if docker manifest inspect ${{ secrets.DOCKER_USERNAME }}/${image}:${tag} >/dev/null 2>&1; then
+            echo "ALERT! You seem to re-run this deploy. It means that previous version of this build ${image}:${tag} will deleted and recreated. You may redo it if your deploy fails."
+            echo "Image ${image}:${tag} already exists. Deleting..."
+            docker image rm ${{ secrets.DOCKER_USERNAME }}/${image}:${tag} || true
+            echo "Image ${image}:${tag} deleted successfully"
+          else
+            echo "Image ${image}:${tag} does not exist yet"
+          fi
+        }
+        
+        # Проверяем и удаляем оба образа если они существуют
+        check_and_delete_image "booking_app" "${{ env.NEW_VERSION }}"
+        check_and_delete_image "booking_nginx" "${{ env.NEW_VERSION }}"
     
     - name: Update version files
       run: |
