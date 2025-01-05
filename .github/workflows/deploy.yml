@@ -82,15 +82,20 @@ jobs:
     
     - name: Update version files
       run: |
-        echo "${{ env.NEW_VERSION }}" > version.txt
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git add version.txt
-        git commit -m "Update version to ${{ env.NEW_VERSION }}" || echo "No changes to commit"
-        git tag ${{ env.NEW_VERSION }}
-        git push https://${{ secrets.PAT }}@github.com/rumiantsevaa/Diploma-Project-Booking-Service.git HEAD:main
-        git push https://${{ secrets.PAT }}@github.com/rumiantsevaa/Diploma-Project-Booking-Service.git ${{ env.NEW_VERSION }}
-
+          # Проверяем существование тега
+          if git ls-remote --tags origin refs/tags/${{ env.NEW_VERSION }} | grep -q refs/tags/${{ env.NEW_VERSION }}; then
+            echo "ALERT! This is a re-run. Skipping version update in version.txt"
+          else
+          # Если тега нет - обновляем версию как обычно
+            echo "${{ env.NEW_VERSION }}" > version.txt
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add version.txt
+            git commit -m "Update version to ${{ env.NEW_VERSION }}" || echo "No changes to commit"
+            git tag ${{ env.NEW_VERSION }}
+            git push https://${{ secrets.PAT }}@github.com/rumiantsevaa/Diploma-Project-Booking-Service.git HEAD:main
+            git push https://${{ secrets.PAT }}@github.com/rumiantsevaa/Diploma-Project-Booking-Service.git ${{ env.NEW_VERSION }}
+          fi
 
     - name: Build and Push Flask Image
       uses: docker/build-push-action@v4
