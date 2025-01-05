@@ -314,3 +314,30 @@ Possibility of customization via configuration files.
 04.01
 Netdata screenshots added.
 MINOR FIX: Update version to v1.0.132 -> NOW Trivy SCANS THE SAME BUILD AND NOT PREVIOUS -> Running Trivy with options: trivy image ***/booking_app:v1.0.132. 
+
+05.01
+--- VERSION MANAGEMENT ENHANCEMENT ---
+
+Implemented a flexible versioning system by introducing a 'ver_type' variable in the deployment workflow. This enhancement allows for more controlled version increments based on the type of changes being deployed.
+The versioning system now supports three modes:
+1. VER_TYPE=1 (Default - Patch):
+   - Increments the last number (patch version)
+   - Example: v1.0.1 -> v1.0.2
+   - Used for bug fixes and minor changes
+2. VER_TYPE=2 (Minor):
+   - Increments the middle number and resets patch to 0
+   - Example: v1.0.1 -> v1.1.0
+   - Used for new features that maintain backwards compatibility
+3. VER_TYPE=3 (Major):
+   - Increments the first number and resets others to 0
+   - Example: v1.0.1 -> v2.0.0
+   - Used for breaking changes or significant updates
+Benefits:
+- More granular control over version numbers
+- Better reflection of the significance of changes
+- Follows semantic versioning principles
+- Maintains automated deployment workflow
+- Provides flexibility in version management
+
+This improvement allows the team to better communicate the nature and impact of changes through version numbers while maintaining the automated deployment process.
+Test is successful! v1.0.145 ->  v1.1.0 - (Minor)  Test for Major transition is not due yet.  v.2.0.0 will be very soon! Stay tuned. 
