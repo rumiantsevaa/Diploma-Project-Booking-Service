@@ -406,6 +406,20 @@ Benefits:
 - Clear deployment status tracking
 - Reliable version history
 
-This enhancement significantly improves system reliability by ensuring that any deployment issues are automatically handled with a fallback to the last known working state, minimizing potential downtime and maintaining service availability.
+This enhancement significantly improves system reliability by ensuring that any deployment issues are automatically handled with a fallback to the last known working state, 
+minimizing potential downtime and maintaining service availability.
 Therefore, my project deployment has evolved from a basic CI/CD setup into a proper deployment pipeline with production-ready features and safety mechanisms.
 
+--- ROLLBACK MECHANISM OPTIMIZATION ---
+Enhanced rollback functionality by introducing a unified rollback_deployment() function that is used in two critical scenarios: 
+1.Deployment Failure Rollback(already set up in described below: viz. DEPLOYMENT WORKFLOW ENHANCEMENT: ERROR HANDLING & ROLLBACK MECHANISM) 
+2.Health Check Failure Rollback (NEW) -> Triggers when containers fail health checks & Monitors both Nginx and Flask container health status
+
+Rollback Function Implementation benefits : / Reduced code duplication / Consistent rollback behavior
+While adding Health Check Implementation :  / Validates service availability before completing deployment  / Prevents deployment of non-functional containers  / Ensures both Nginx and Flask services are fully operational
+
+! Critical improvement to prevent premature health checks -> Initialization Pause Addition:
+* Added 15-second pause after container startup that prevents false-negative health check results
+
+This enhancement ensures that containers are given adequate time to initialize and properly start their services before being subjected to health checks, significantly improving the reliability 
+of my deployment process and reducing unnecessary rollbacks due to premature health checks.
