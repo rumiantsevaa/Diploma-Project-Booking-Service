@@ -182,15 +182,32 @@ jobs:
           # Запускаем новые контейнеры
           docker compose up -d --force-recreate
 
-          # Check deployment status
-          if [ $? -ne 0 ]; then
-            echo "Deployment failed! Rolling back to version ${{ env.LAST_SUCCESSFUL_VERSION }}"
+          # Define rollback function
+          rollback_deployment() {
+            local error_message=$1
+            echo "$error_message Rolling back to version ${{ env.LAST_SUCCESSFUL_VERSION }}"
             docker pull ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.LAST_SUCCESSFUL_VERSION }}
             docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.LAST_SUCCESSFUL_VERSION }}
             echo "TAG=${{ env.LAST_SUCCESSFUL_VERSION }}" > .env
             docker compose up -d --force-recreate
-            exit 1  # Exit with error to trigger workflow stop
+            exit 1
+          }
+
+          # Check deployment status
+          if [ $? -ne 0 ]; then
+              rollback_deployment "Deployment failed!"
           fi
+
+          # Check if both containers are running and healthy
+          NGINX_STATUS=$(docker ps --filter "name=project-nginx-proxy" --filter "ancestor=${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.NEW_VERSION }}" --format "{{.Status}}" | grep -c "Up.*healthy")
+          APP_STATUS=$(docker ps --filter "name=project-flask-app" --filter "ancestor=${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}" --format "{{.Status}}" | grep -c "Up.*healthy")
+
+          if [ $NGINX_STATUS -ne 1 ] || [ $APP_STATUS -ne 1 ]; then
+            echo "Container health check failed! One or both containers are not healthy. Rolling back to version ${{ env.LAST_SUCCESSFUL_VERSION }}"
+              rollback_deployment "Container health check failed! One or both containers are not healthy."
+          fi
+          
+          echo "Deployment successful - both containers are running and healthy"
 
     - name: Update last successful version
       if: success() && steps.deploy_step.outcome == 'success'
