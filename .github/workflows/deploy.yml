@@ -8,6 +8,7 @@ on:
       - 'version.txt'  # Игнорировать изменения в version.txt
       - 'project.log'  # Игнорировать изменения в project.log
       - 'netdata/dashboards/**'  # Игнорировать изменения в dashboards/
+      - 'last_successful_version.txt'  # Игнорировать изменения в last_successful_version.txt
      
 jobs:
   deploy:
@@ -22,6 +23,10 @@ jobs:
       with:
         token: ${{ secrets.PAT }}
         fetch-depth: 0
+
+    - name: Load last successful version
+      run: |
+        echo "LAST_SUCCESSFUL_VERSION=$(cat last_successful_version.txt)" >> $GITHUB_ENV
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
@@ -59,7 +64,7 @@ jobs:
         echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
         echo "$NEW_VERSION" > version.txt
 
-    - name: Check and delete existing Docker images if needed
+    - name: Check and delete existing Docker images if Rerun
       run: |
         # Функция для проверки и удаления образа
         check_and_delete_image() {
@@ -80,7 +85,7 @@ jobs:
         check_and_delete_image "booking_app" "${{ env.NEW_VERSION }}"
         check_and_delete_image "booking_nginx" "${{ env.NEW_VERSION }}"
     
-    - name: Update version files
+    - name: Update version.txt unless Rerun 
       run: |
           # Проверяем существование тега
           if git ls-remote --tags origin refs/tags/${{ env.NEW_VERSION }} | grep -q refs/tags/${{ env.NEW_VERSION }}; then
@@ -149,6 +154,8 @@ jobs:
           fi
 
     - name: Deploy to AWS
+      id: deploy_step
+      continue-on-error: true  # Allow continuing even if deployment fails
       uses: appleboy/ssh-action@v0.1.5
       with:
         host: ${{ secrets.AWS_SERVER_IP }}
@@ -174,6 +181,32 @@ jobs:
           
           # Запускаем новые контейнеры
           docker compose up -d --force-recreate
+
+          # Check deployment status
+          if [ $? -ne 0 ]; then
+            echo "Deployment failed! Rolling back to version ${{ env.LAST_SUCCESSFUL_VERSION }}"
+            docker pull ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.LAST_SUCCESSFUL_VERSION }}
+            docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.LAST_SUCCESSFUL_VERSION }}
+            echo "TAG=${{ env.LAST_SUCCESSFUL_VERSION }}" > .env
+            docker compose up -d --force-recreate
+            exit 1  # Exit with error to trigger workflow stop
+          fi
+
+    - name: Update last successful version
+      if: success() && steps.deploy_step.outcome == 'success'
+      run: |
+            echo "${{ env.NEW_VERSION }}" > last_successful_version.txt
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add last_successful_version.txt
+            git commit -m "Update last successful version to ${{ env.NEW_VERSION }}"
+            git push
+        
+    - name: Exit workflow after rollback
+      if: failure() && steps.deploy_step.outcome == 'failure'
+      run: |
+            echo "Deployment failed and rollback was performed. Stopping workflow."
+            exit 0
 
     - name: SSL Certificate Management
       uses: appleboy/ssh-action@v0.1.5
