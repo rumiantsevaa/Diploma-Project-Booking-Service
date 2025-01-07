@@ -359,5 +359,53 @@ These improvements ensure that:
 * This enhancement significantly improves the deployment workflow reliability and user experience when reruns are necessary.
 
 
+07.01
+--- DEPLOYMENT WORKFLOW ENHANCEMENT: ERROR HANDLING & ROLLBACK MECHANISM ---
 
+The deployment workflow has been significantly enhanced with robust error handling and automatic rollback capabilities:
+
+1. Last Successful Version Tracking:
+- Implemented storage of the last known working version in last_successful_version.txt
+- This version serves as a fallback point for recovery
+- File is automatically updated only after successful deployments
+
+2. Enhanced Deployment Process:
+- Added / continue-on-error: true / to allow controlled error handling
+- Deployment step now includes status checking
+- Automatic detection of any deployment failures
+- Integrated rollback mechanism for recovery
+
+3. Rollback Mechanism:
+When deployment fails (namely obtaining exit code x errors):
+- System automatically initiates rollback procedure
+- Pulls previous working version from Docker Hub
+- Updates environment with last successful version
+- Restarts containers with proven stable version
+- Exits workflow after successful rollback
+
+4. Version Management:
+Successful deployments:
+- Update last_successful_version.txt with new version
+- Commit and push changes to repository
+- Maintain version history for tracking
+
+Failed deployments:
+- Preserve previous successful version
+- No updates to version tracking files
+- Provide clear failure notifications
+
+5. Workflow Control:
+- Added explicit workflow exit after rollback
+- Prevents further steps execution after failure
+- Maintains system stability during issues
+
+Benefits:
+- Zero downtime deployment strategy
+- Automatic recovery from failures
+- Maintained system stability
+- Clear deployment status tracking
+- Reliable version history
+
+This enhancement significantly improves system reliability by ensuring that any deployment issues are automatically handled with a fallback to the last known working state, minimizing potential downtime and maintaining service availability.
+Therefore, my project deployment has evolved from a basic CI/CD setup into a proper deployment pipeline with production-ready features and safety mechanisms.
 
