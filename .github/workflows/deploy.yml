@@ -198,6 +198,10 @@ jobs:
               rollback_deployment "Deployment failed!"
           fi
 
+          # Добавить паузу для инициализации контейнеров
+          echo "Waiting for containers to initialize..."
+          sleep 15
+
           # Check if both containers are running and healthy
           NGINX_STATUS=$(docker ps --filter "name=project-nginx-proxy" --filter "ancestor=${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.NEW_VERSION }}" --format "{{.Status}}" | grep -c "Up.*healthy")
           APP_STATUS=$(docker ps --filter "name=project-flask-app" --filter "ancestor=${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}" --format "{{.Status}}" | grep -c "Up.*healthy")
