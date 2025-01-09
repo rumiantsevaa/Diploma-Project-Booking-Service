@@ -36,5 +36,5 @@
 * Container registry administration
 * Web and server application deployment
 * CI/CD pipeline configuration for automated deployment
-* Security vulnerability assessment and integration
+* Security vulnerability assessment and pipeline integration
 * Monitoring system setup
