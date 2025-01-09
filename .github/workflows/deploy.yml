@@ -309,7 +309,7 @@ jobs:
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_PASSWORD }}
       
-        # Базовый скан Trivy с выводом в консоль
+        # Trivy
         - name: Run Trivy vulnerability scanner
           uses: aquasecurity/trivy-action@master
           env:
@@ -322,7 +322,7 @@ jobs:
             severity: 'CRITICAL,HIGH,MEDIUM'  # Уровень серьезности интересующих уязвимостей
             timeout: '5m'
 
-          # Replace the existing ZAP Scan with this updated version
+          # ZAP 
         - name: ZAP Scan with Official Stable Image
           run: |
            # Pull the official stable ZAP image
