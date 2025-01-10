@@ -423,3 +423,6 @@ While adding Health Check Implementation :  / Validates service availability bef
 
 This enhancement ensures that containers are given adequate time to initialize and properly start their services before being subjected to health checks, significantly improving the reliability 
 of my deployment process and reducing unnecessary rollbacks due to premature health checks.
+
+10.01 
+DOCKER_HUB_NICKNAME GitHub secret added.
