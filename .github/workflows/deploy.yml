@@ -165,8 +165,9 @@ jobs:
           # Создаем минимальную структуру директорий
           mkdir -p ~/project/nginx
           
-          # Создаем .env файл с версией
+          # Создаем .env файл с версией и передаем ее + DOCKER_HUB_NICKNAME
           echo "TAG=${{ env.NEW_VERSION }}" > ~/project/.env
+          echo "DOCKER_HUB_NICKNAME=${{ secrets.DOCKER_HUB_NICKNAME }}" >> ~/project/.env
           
           # Переходим в директорию проекта
           cd ~/project
