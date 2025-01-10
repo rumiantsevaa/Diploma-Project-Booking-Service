@@ -1,7 +1,7 @@
 services:
   nginx-proxy:
     build: nginx
-    image: serpentariya/booking_nginx:${TAG}
+    image: ${DOCKER_HUB_NICKNAME}/booking_nginx:${TAG}
     restart: always
     volumes:
       - ./nginx/default.conf:/tmp/default.conf
@@ -25,7 +25,7 @@ services:
 
   flask-app:
     build: flask
-    image: serpentariya/booking_app:${TAG}
+    image: ${DOCKER_HUB_NICKNAME}/booking_app:${TAG}
     restart: always
     ports: 
       - '8000:8000'
