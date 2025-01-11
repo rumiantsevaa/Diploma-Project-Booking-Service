@@ -426,3 +426,19 @@ of my deployment process and reducing unnecessary rollbacks due to premature hea
 
 10.01 
 DOCKER_HUB_NICKNAME GitHub secret added.
+
+11.01  ZAP -> Security ENHANCEMENTS
+HTTP → HTTPS and HTTPS → HTTP transitions (PASS: HTTP to HTTPS Insecure Transition in Form Post [10041] and HTTPS to HTTP Insecure Transition in Form Post [10042]):
+All transitions to HTTPS are now set up correctly. Redirection works via return 301.
+
+Page content complies with Cache-Control settings (PASS: Re-examine Cache-control Directives [10015]):
+Cache-Control headers are set correctly for non-cacheable and static content.
+
+No insecure JS or resources (PASS: Secure Pages Include Mixed Content [10040]):
+All resources are loaded over HTTPS.
+
+Content Security Policy (PASS: CSP [10055]):
+The CSP header has been added and configures the security policy for resources. However, some pages still do not use CSP, see below.
+
+Minor vulnerabilities have been fixed (e.g. [10037] and [10054]):
+X-Powered-By and SameSite headers have been adjusted, preventing information leaks.
