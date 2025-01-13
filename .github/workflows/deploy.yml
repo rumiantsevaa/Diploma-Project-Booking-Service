@@ -293,7 +293,7 @@ jobs:
           fi
           
   security-checks-and-monitoring:
-      needs: deploy  # Чтобы проверки производились исключительно по успешной отработке deploy.yml
+      needs: deploy  # Чтобы проверки производились исключительно по отработке deploy.yml
       runs-on: ubuntu-latest
       steps:
         - name: Checkout code
