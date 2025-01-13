@@ -2,20 +2,27 @@
 <html>
 <head>
     <title>BBooking Diploma Project</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
     <div class="container" id="hotelList">
-        <h1>Welcome to BBooking, choose your Hotel.</h1>
+        <h1 style="text-align: center; font-style: italic;">Welcome to BBooking, choose your Hotel.</h1>
         <div class="hotel-grid">
             {% for hotel in hotels %}
             <div class="hotel-card">
-                <img src="/static/images/{{ hotel.image_path }}" alt="{{ hotel.name }}">
+                <img src="{{ url_for('static', filename='images/' + hotel.image_path) }}" 
+                     alt="{{ hotel.name }}" 
+                     class="hotel-image">
                 <h2>{{ hotel.name }}</h2>
                 <p>{{ hotel.location }}</p>
                 <p>{{ hotel.description }}</p>
                 <p>Price per night: {{ hotel.price_per_night }}€</p>
-                <button class="book-btn" data-hotel-id="{{ hotel.id }}" data-hotel-name="{{ hotel.name }}">
+                <button class="book-btn" 
+                        onclick="showBookingForm({{ hotel.id }}, '{{ hotel.name }}')"
+                        data-hotel-id="{{ hotel.id }}" 
+                        data-hotel-name="{{ hotel.name }}">
                     Book
                 </button>
             </div>
@@ -28,12 +35,13 @@
         <p id="errorMessage"></p>
         <form id="bookForm">
             <input type="hidden" id="hotelId" name="hotel_id">
-            <input type="text" id="name" name="name" placeholder="Guest name" required>
-            <input type="text" id="phone" name="phone" placeholder="Guest number (380XXXXXXXXX)" required>
-            <button type="button" class="submit-btn">Book</button>
-            <button type="button" class="return-btn">Return to Hotels</button>
+            <input type="text" id="name" name="name" class="input-field" placeholder="Guest name" required>
+            <input type="text" id="phone" name="phone" class="input-field" placeholder="Guest number (380XXXXXXXXX)" required>
+            <button type="button" class="submit-btn" onclick="submitBooking()">Book</button>
+            <button type="button" class="return-btn" onclick="showHotelList()">Return to Hotels</button>
         </form>
     </div>
+
     <script src="/static/js/scripts.js"></script>
 </body>
 </html>
