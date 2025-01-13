@@ -229,7 +229,7 @@ jobs:
       if: failure() && steps.deploy_step.outcome == 'failure'
       run: |
             echo "Deployment failed and rollback was performed. Stopping workflow."
-            exit 0
+            exit 1
 
     - name: SSL Certificate Management
       uses: appleboy/ssh-action@v0.1.5
