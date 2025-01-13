@@ -186,8 +186,12 @@ jobs:
           rollback_deployment() {
             local error_message=$1
             echo "$error_message Rolling back to version ${{ env.LAST_SUCCESSFUL_VERSION }}"
+            docker rmi -f ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.LAST_SUCCESSFUL_VERSION }}
+            docker rmi -f ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.LAST_SUCCESSFUL_VERSION }}
+            
             docker pull ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.LAST_SUCCESSFUL_VERSION }}
             docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.LAST_SUCCESSFUL_VERSION }}
+    
             echo "TAG=${{ env.LAST_SUCCESSFUL_VERSION }}" > .env
             echo "DOCKER_HUB_NICKNAME=${{ secrets.DOCKER_HUB_NICKNAME }}" >> .env
             docker compose up -d --force-recreate
