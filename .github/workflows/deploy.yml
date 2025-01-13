@@ -187,42 +187,12 @@ jobs:
           rollback_deployment() {
             local error_message=$1
             echo "$error_message Rolling back to version ${{ env.LAST_SUCCESSFUL_VERSION }}"
-            
-            # 1. Сначала останавливаем все контейнеры
-            docker compose down --remove-orphans
-            
-            # 2. Очищаем неиспользуемые образы и контейнеры
-            docker system prune -f
-            
-            # 3. Восстанавливаем конфигурационные файлы старой версии
-            cp /tmp/nginx/default.conf.${{ env.LAST_SUCCESSFUL_VERSION }} nginx/default.conf
-            cp /tmp/compose/compose.yaml.${{ env.LAST_SUCCESSFUL_VERSION }} compose.yaml
-            
-            # 4. Обновляем .env файл на старую версию
-            echo "TAG=${{ env.LAST_SUCCESSFUL_VERSION }}" > .env
-            echo "DOCKER_HUB_NICKNAME=${{ secrets.DOCKER_HUB_NICKNAME }}" >> .env
-            
-            # 5. Удаляем новые образы
-            docker rmi ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.NEW_VERSION }}
-            docker rmi ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}
-            
-            # 6. Загружаем старые образы
             docker pull ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.LAST_SUCCESSFUL_VERSION }}
             docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.LAST_SUCCESSFUL_VERSION }}
-
+            echo "TAG=${{ env.LAST_SUCCESSFUL_VERSION }}" > .env
             docker compose up -d --force-recreate
-
-            echo "ROLLBACK_PERFORMED=true" >> rollback_status
-                
             exit 1
           }
-
-          # Проверяем был ли выполнен rollback
-          if [ -f rollback_status ]; then
-            rm rollback_status
-            echo "::set-output name=rollback::true"
-            exit 1
-          fi
 
           # Check deployment status
           if [ $? -ne 0 ]; then
@@ -255,19 +225,12 @@ jobs:
             git push
         
     - name: Exit workflow after rollback
-      if: |
-        always() && 
-        (steps.deploy_step.outcome == 'failure' || 
-         steps.deploy_step.outputs.rollback == 'true')
+      if: failure() && steps.deploy_step.outcome == 'failure'
       run: |
-        echo "Deployment failed or rollback was performed. Stopping workflow."
-        exit 1
+            echo "Deployment failed and rollback was performed. Stopping workflow."
+            exit 0
 
     - name: SSL Certificate Management
-      if: |
-        success() && 
-        steps.deploy_step.outcome == 'success' && 
-        steps.deploy_step.outputs.rollback != 'true'
       uses: appleboy/ssh-action@v0.1.5
       with:
         host: ${{ secrets.AWS_SERVER_IP }}
