@@ -122,23 +122,3 @@ def info():
 @app.route('/flask-health-check')
 def flask_health_check():
 	return "success"
-
-@app.after_request
-def add_security_headers(response):
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-    response.headers['Content-Security-Policy'] = (
-        "default-src 'self'; img-src 'self' data:; "
-        "script-src 'self'; style-src 'self' 'unsafe-inline'; "
-        "font-src 'self' https://fonts.gstatic.com; frame-ancestors 'none'; "
-        "base-uri 'self'; form-action 'self';"
-    )
-    return response
-
-@app.errorhandler(404)
-def not_found_error(error):
-    return jsonify({"error": "Page not found"}), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    return jsonify({"error": "Internal server error"}), 500
