@@ -39,5 +39,23 @@ function submitBooking() {
     })
     .catch(error => {
         document.getElementById('errorMessage').textContent = 'Booking error. Try again later.';
-            });
-        }
+    });
+}
+
+// Добавляем обработчики событий после загрузки DOM
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработчики для кнопок бронирования
+    document.querySelectorAll('.book-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const hotelId = this.dataset.hotelId;
+            const hotelName = this.dataset.hotelName;
+            showBookingForm(hotelId, hotelName);
+        });
+    });
+
+    // Обработчик для кнопки возврата
+    document.querySelector('.return-btn').addEventListener('click', showHotelList);
+
+    // Обработчик для кнопки отправки формы
+    document.querySelector('.submit-btn').addEventListener('click', submitBooking);
+});
