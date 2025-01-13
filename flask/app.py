@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import sqlite3
 import re
 import os
+import secrets
 
 # Создание или подключение к базе данных <== MERGED FROM INIT_DB.PY  
 db_path = 'hotels.db'
@@ -122,3 +123,13 @@ def info():
 @app.route('/flask-health-check')
 def flask_health_check():
 	return "success"
+
+
+@app.before_request
+def before_request():
+    g.csp_nonce = secrets.token_urlsafe(32)
+
+
+@app.context_processor
+def utility_processor():
+    return dict(csp_nonce=g.csp_nonce)
