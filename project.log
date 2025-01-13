@@ -442,3 +442,12 @@ The CSP header has been added and configures the security policy for resources. 
 
 Minor vulnerabilities have been fixed (e.g. [10037] and [10054]):
 X-Powered-By and SameSite headers have been adjusted, preventing information leaks.
+
+13.01 ZAP -> Security ENHANCEMENTS
+Fixed Issues:
+Missing Anti-clickjacking Header [10020]: Resolved for all URLs.
+X-Content-Type-Options Header Missing [10021]: Fixed for all occurrences across the site.
+Information Disclosure - Suspicious Comments [10027]: Addressed for identified instances.
+Strict-Transport-Security Header Not Set [10035]: Implemented HSTS headers for all applicable pages.
+Content Security Policy (CSP) Header Not Set [10038]: Added a CSP header, though further refinement is ongoing.
+Permissions Policy Header Not Set [10063]: Resolved by adding the appropriate headers
