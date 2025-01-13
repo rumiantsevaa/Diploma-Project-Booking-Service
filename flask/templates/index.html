@@ -2,26 +2,25 @@
 <html>
 <head>
     <title>BBooking Diploma Project</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <script src="/static/js/scripts.js" defer></script>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script>
 </head>
 <body>
     <div class="container" id="hotelList">
-        <h1 style="text-align: center; font-style: italic;">Welcome to BBooking, choose your Hotel.</h1>
+        <h1 class="welcome-header">Welcome to BBooking, choose your Hotel.</h1>
         <div class="hotel-grid">
             {% for hotel in hotels %}
-            <div class="hotel-card">
+            <div class="hotel-card" data-hotel-id="{{ hotel.id }}">
                 <img src="{{ url_for('static', filename='images/' + hotel.image_path) }}" 
                      alt="{{ hotel.name }}" 
                      class="hotel-image">
                 <h2>{{ hotel.name }}</h2>
                 <p>{{ hotel.location }}</p>
                 <p>{{ hotel.description }}</p>
-                <p>Price per night: {{ hotel.price_per_night }}€</p>
+                <p class="price">Price per night: {{ hotel.price_per_night }}€</p>
                 <button class="book-btn" 
-                        onclick="showBookingForm({{ hotel.id }}, '{{ hotel.name }}')"
                         data-hotel-id="{{ hotel.id }}" 
                         data-hotel-name="{{ hotel.name }}">
                     Book
@@ -31,15 +30,17 @@
         </div>
     </div>
 
-    <div id="bookingForm">
+    <div id="bookingForm" class="hidden">
         <h1>Booking <span id="hotelNameBooking"></span></h1>
-        <p id="errorMessage"></p>
-        <form id="bookForm">
+        <p id="errorMessage" class="error-message"></p>
+        <form id="bookForm" class="booking-form">
             <input type="hidden" id="hotelId" name="hotel_id">
             <input type="text" id="name" name="name" class="input-field" placeholder="Guest name" required>
             <input type="text" id="phone" name="phone" class="input-field" placeholder="Guest number (380XXXXXXXXX)" required>
-            <button type="button" class="submit-btn" onclick="submitBooking()">Book</button>
-            <button type="button" class="return-btn" onclick="showHotelList()">Return to Hotels</button>
+            <div class="button-group">
+                <button type="button" id="submitButton" class="submit-btn">Book</button>
+                <button type="button" id="returnButton" class="return-btn">Return to Hotels</button>
+            </div>
         </form>
     </div>
 </body>
