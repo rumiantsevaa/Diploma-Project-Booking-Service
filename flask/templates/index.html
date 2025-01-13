@@ -4,8 +4,8 @@
     <title>BBooking Diploma Project</title>
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <script src="/static/js/scripts.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 </head>
 <body>
     <div class="container" id="hotelList">
@@ -42,7 +42,5 @@
             <button type="button" class="return-btn" onclick="showHotelList()">Return to Hotels</button>
         </form>
     </div>
-
-    <script src="/static/js/scripts.js"></script>
 </body>
 </html>
