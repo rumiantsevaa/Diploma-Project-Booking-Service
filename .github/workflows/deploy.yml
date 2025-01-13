@@ -190,6 +190,7 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.LAST_SUCCESSFUL_VERSION }}
             docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.LAST_SUCCESSFUL_VERSION }}
             echo "TAG=${{ env.LAST_SUCCESSFUL_VERSION }}" > .env
+            echo "DOCKER_HUB_NICKNAME=${{ secrets.DOCKER_HUB_NICKNAME }}" >> ~/project/.env
             docker compose up -d --force-recreate
             exit 1
           }
