@@ -13,7 +13,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Добавляем outputs для передачи версии
     outputs:
       version: ${{ env.NEW_VERSION }}
 
