@@ -8,9 +8,6 @@
 
 [@rumiantsevaa](https://github.com/rumiantsevaa) - System Administration & Security Deliverables + Website development backend and frontend ( as secondary and out of grade Deliverable)
 
-[@Wolodya-TOP](https://github.com/Wolodya-TOP) - Design Deliverables
-
-
 ## Project Functional Requirements by Team Roles:
 
 ### Design Team Deliverables:
