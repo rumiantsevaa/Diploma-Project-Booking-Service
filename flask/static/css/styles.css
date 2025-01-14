@@ -10,7 +10,7 @@
 }
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     margin: 0;
     padding: 20px;
     background-color: var(--background-color);
@@ -26,6 +26,12 @@ body {
     text-align: center;
     font-style: italic;
     margin-bottom: 2rem;
+}
+
+.tagline {
+    text-align: center;
+    margin-bottom: 2em;
+    font-size: 1.2em;
 }
 
 .hotel-grid {
@@ -114,4 +120,20 @@ body {
     color: var(--danger-color);
     text-align: center;
     margin: 10px 0;
+}
+
+.site-footer {
+    text-align: center;
+    padding: 2em;
+    margin-top: 2em;
+    color: var(--text-color);
+}
+
+.site-footer a {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.site-footer a:hover {
+    color: darken(var(--primary-color), 10%);
 }

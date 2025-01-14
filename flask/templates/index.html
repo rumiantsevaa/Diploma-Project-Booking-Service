@@ -3,13 +3,13 @@
 <head>
     <title>BBooking Diploma Project</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script>
 </head>
 <body>
     <div class="container" id="hotelList">
         <h1 class="welcome-header">Welcome to BBooking, choose your Hotel.</h1>
+        <p class="tagline">Find your next adventure with ease and style—explore the world without limits! Be trendy! Bbooking!</p>
         <div class="hotel-grid">
             {% for hotel in hotels %}
             <div class="hotel-card" data-hotel-id="{{ hotel.id }}">
@@ -19,7 +19,7 @@
                 <h2>{{ hotel.name }}</h2>
                 <p>{{ hotel.location }}</p>
                 <p>{{ hotel.description }}</p>
-                <p class="price">Price per night: {{ hotel.price_per_night }}€</p>
+                <p class="price">Price per night: {{ hotel.price_per_night }}â¬</p>
                 <button class="book-btn" 
                         data-hotel-id="{{ hotel.id }}" 
                         data-hotel-name="{{ hotel.name }}">
@@ -43,5 +43,9 @@
             </div>
         </form>
     </div>
+
+    <footer class="site-footer">
+        <p>This is not a real booking site; bbooking is a diploma project website. All materials are licensed under the MIT License. Deployment and development are managed by @rumiantsevaa. For more information, visit <a href="https://github.com/rumiantsevaa/Diploma-Project-Booking-Service" target="_blank">GitHub</a>.</p>
+    </footer>
 </body>
 </html>
