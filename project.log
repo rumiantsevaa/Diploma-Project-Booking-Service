@@ -463,3 +463,5 @@ Removed Google Fonts dependency
 CSP now only allows styles from our domain
 Reduced security risks by eliminating external resources
 No more conflicts between CSP and external fonts
+
+Removed Google and CF Fonts from nginx config files.
