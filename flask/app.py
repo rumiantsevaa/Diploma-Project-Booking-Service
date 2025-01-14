@@ -67,6 +67,8 @@ print("База данных обновлена.")
 
 # END OF LINES MERGED FROM INIT_DB.PY  
 
+app = Flask(__name__)
+
 
 @app.before_request
 def before_request():
@@ -82,9 +84,6 @@ def add_security_headers(response):
     
     response.headers['Content-Security-Policy'] = csp
     return response
-
-
-app = Flask(__name__)
 
 
 def get_db_connection():
