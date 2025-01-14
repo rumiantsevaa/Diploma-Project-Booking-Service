@@ -3,8 +3,8 @@
 <head>
     <title>BBooking Diploma Project</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" nonce="{{ g.csp_nonce }}">
+    <script src="{{ url_for('static', filename='js/scripts.js') }}" defer nonce="{{ g.csp_nonce }}"></script>
 </head>
 <body>
     <div class="container" id="hotelList">

@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, jsonify
 import sqlite3
 import re
 import os
+from flask import g
+import secrets
 
 # Создание или подключение к базе данных <== MERGED FROM INIT_DB.PY  
 db_path = 'hotels.db'
@@ -64,6 +66,23 @@ conn.close()
 print("База данных обновлена.")
 
 # END OF LINES MERGED FROM INIT_DB.PY  
+
+
+@app.before_request
+def before_request():
+    g.csp_nonce = request.headers.get('X-CSP-Nonce', secrets.token_urlsafe(32))
+
+@app.after_request
+def add_security_headers(response):
+    csp = (f"default-src 'self'; "
+           f"script-src 'self' 'nonce-{g.csp_nonce}'; "
+           f"style-src 'self' 'nonce-{g.csp_nonce}'; "
+           "img-src 'self' data: https:; "
+           "font-src 'self';")
+    
+    response.headers['Content-Security-Policy'] = csp
+    return response
+
 
 app = Flask(__name__)
 
