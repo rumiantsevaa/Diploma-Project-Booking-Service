@@ -465,3 +465,39 @@ Reduced security risks by eliminating external resources
 No more conflicts between CSP and external fonts
 
 Removed Google and CF Fonts from nginx config files.
+-----------------------------------------------------------------------------------------
+* Security Headers Implementation Report *  -> Content Security Policy (CSP) Enhancement
+-----------------------------------------------------------------------------------------
+I have implemented a robust Content Security Policy with nonce-based script execution instead of 'unsafe-inline', significantly improving security. 
+The CSP configuration includes:
+~ Resource Loading Restrictions:
+default-src 'self': Restricts resource loading to same origin
+img-src 'self' data: https://bbooking.pp.ua: Controlled image loading
+script-src 'self' 'nonce-$csp_nonce': Nonce-based script execution
+style-src 'self' 'nonce-$csp_nonce': Nonce-based style loading
+font-src 'self': Same-origin font loading
+frame-ancestors 'none': Prevents iframe embedding
+base-uri 'self': Restricts base URI manipulation
+form-action 'self': Controls form submission targets
+require-trusted-types-for 'script': Enforces Trusted Types
+object-src 'none': Blocks plugin content
+
+Implemented comprehensive security headers:
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Strict-Transport-Security with max-age=31536000
+Permissions-Policy restricting various browser features
+Referrer-Policy: strict-origin-when-cross-origin
+Cache-Control: no-store, no-cache, must-revalidate
+
+~ Browser Compatibility
+The implementation uses modern security features (nonces/hashes) supported by all major browsers:
+Chrome/Chromium (40+) Firefox (36+) Safari (10+) Edge (15+) Opera (27+) iOS Safari (10+)
+
+~ Key Security Improvements
+Moved from 'unsafe-inline' to nonce-based script execution
+Implemented strict resource loading policies
+Enhanced protection against XSS and injection attacks
+Comprehensive browser feature control through Permissions-Policy
+Enforced HTTPS through HSTS preloading
+All security headers are configured with the 'always' directive, ensuring consistent application across all responses.
