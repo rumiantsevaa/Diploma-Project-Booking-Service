@@ -172,7 +172,7 @@ jobs:
           cd ~/project
           
           # Останавливаем контейнеры и чистим неиспользуемые образы
-          docker compose down --remove-orphans
+          docker-compose down --remove-orphans
           docker system prune -f
           
           # Подтягиваем новые образы из Docker Hub
@@ -180,7 +180,7 @@ jobs:
           docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}
           
           # Запускаем новые контейнеры
-          docker compose up -d --force-recreate
+          docker-compose up -d --force-recreate
 
           # Define rollback function
           rollback_deployment() {
@@ -189,7 +189,7 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.LAST_SUCCESSFUL_VERSION }}
             docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.LAST_SUCCESSFUL_VERSION }}
             echo "TAG=${{ env.LAST_SUCCESSFUL_VERSION }}" > .env
-            docker compose up -d --force-recreate
+            docker-compose up -d --force-recreate
             exit 1
           }
 
@@ -268,17 +268,17 @@ jobs:
           if echo "$CERT_INFO" | grep -q "Domains: bbooking.pp.ua www.bbooking.pp.ua"; then
             echo "Certificate found for both domains. Attempting renewal if needed..."
             # Останавливаем контейнеры перед обновлением
-            cd ~/project && docker compose down
+            cd ~/project && docker-compose down
             
             # Пробуем обновить сертификаты
             sudo certbot renew
             
             # Запускаем контейнеры
-            cd ~/project && docker compose up -d
+            cd ~/project && docker-compose up -d
           else
             echo "No certificate found for both domains. Obtaining new certificate..."
             # Останавливаем контейнеры
-            cd ~/project && docker compose down
+            cd ~/project && docker-compose down
             
             # Получаем новый сертификат
             sudo certbot certonly --standalone \
@@ -288,7 +288,7 @@ jobs:
               --force-renewal
             
             # Запускаем контейнеры
-            cd ~/project && docker compose up -d
+            cd ~/project && docker-compose up -d
           fi
           
   security-checks-and-monitoring:
