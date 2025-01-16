@@ -76,13 +76,26 @@ def before_request():
 
 @app.after_request
 def add_security_headers(response):
-    csp = (f"default-src 'self'; "
-           f"script-src 'self' 'nonce-{g.csp_nonce}'; "
-           f"style-src 'self' 'nonce-{g.csp_nonce}'; "
-           "img-src 'self' data: https:; "
-           "font-src 'self';")
+    # Сохраняем существующий функционал с CSP
+    nonce = getattr(g, 'csp_nonce', '')
+    csp = (
+        "default-src 'self'; "
+        "img-src 'self' data: https://bbooking.pp.ua; "
+        f"script-src 'self' 'nonce-{nonce}'; "
+        f"style-src 'self' 'nonce-{nonce}'; "
+        "font-src 'self'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "require-trusted-types-for 'script'; "
+        "object-src 'none';"
+    )
     
     response.headers['Content-Security-Policy'] = csp
+    # Добавляем Cross-Origin заголовки
+    response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+    response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+    response.headers['Cross-Origin-Resource-Policy'] = 'same-site'
     return response
 
 
