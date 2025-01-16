@@ -593,3 +593,20 @@ This exercise validated both our deployment automation capabilities and security
 The attack on the server continues. The attack is carried out via a botnet. 
 All necessary measures are being taken. Additional security measures are being introduced. 
 More details when I defend my diploma project. What if they parse data from my log?:)
+
+--- SECURITY ENHANCEMENTS REPORT ---
+Successfully addressed multiple security vulnerabilities identified in recent ZAP scans.
+Spectre Vulnerability Mitigation:
+- Resolved "Insufficient Site Isolation Against Spectre Vulnerability [90004]" across all endpoints
+- Implemented comprehensive security headers in Nginx configuration:
+  * Cross-Origin-Opener-Policy: "same-origin"
+  * Cross-Origin-Embedder-Policy: "require-corp" 
+  * Cross-Origin-Resource-Policy: "same-origin"
+- Protected endpoints include:
+  * Main application (/)
+  * Static resources (/static/css/styles.css)
+  * Images and favicon
+  * System files 
+
+Eliminated CSP wildcard directives completely.
+All changes have been tested and verified through ZAP security scans, confirming the successful mitigation of identified vulnerabilities.
