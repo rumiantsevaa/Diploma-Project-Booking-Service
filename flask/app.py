@@ -76,27 +76,25 @@ def before_request():
 
 @app.after_request
 def add_security_headers(response):
-    # Сохраняем существующий функционал с CSP
-    nonce = getattr(g, 'csp_nonce', '')
-    csp = (
-        "default-src 'self'; "
-        "img-src 'self' data: https://bbooking.pp.ua; "
-        f"script-src 'self' 'nonce-{nonce}'; "
-        f"style-src 'self' 'nonce-{nonce}'; "
-        "font-src 'self'; "
-        "frame-ancestors 'none'; "
-        "base-uri 'self'; "
-        "form-action 'self'; "
-        "require-trusted-types-for 'script'; "
-        "object-src 'none';"
-    )
-    
-    response.headers['Content-Security-Policy'] = csp
     # Добавляем Cross-Origin заголовки
     response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
     response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
     response.headers['Cross-Origin-Resource-Policy'] = 'same-origin'
-    response.headers['Feature-Policy'] = "accelerometer 'none'; camera 'none'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; payment 'none'; usb 'none'"
+    # Сохраняем существующий функционал с CSP
+    nonce = getattr(g, 'csp_nonce', '')
+    csp = (
+        "default-src 'self'; "
+        "script-src 'self' 'nonce-{nonce}'; "
+        "style-src 'self' 'nonce-{nonce}'; "
+        "img-src 'self' data: https://bbooking.pp.ua; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "require-trusted-types-for 'script'; "
+        "object-src 'none'"
+    )
+    response.headers['Content-Security-Policy'] = csp
+    response.headers['Permissions-Policy'] = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=(), autoplay=(), display-capture=(), document-domain=(), encrypted-media=(), fullscreen=(self), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), sync-xhr=(), xr-spatial-tracking=()"
     return response
 
 
