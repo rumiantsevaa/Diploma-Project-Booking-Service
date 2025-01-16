@@ -76,7 +76,6 @@ def before_request():
 
 @app.after_request
 def add_security_headers(response):
-    response.headers['Origin-Agent-Cluster'] = '?1'
     # Добавляем Cross-Origin заголовки
     response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
     response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
