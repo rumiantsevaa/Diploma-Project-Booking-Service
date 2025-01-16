@@ -95,7 +95,8 @@ def add_security_headers(response):
     # Добавляем Cross-Origin заголовки
     response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
     response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
-    response.headers['Cross-Origin-Resource-Policy'] = 'same-site'
+    response.headers['Cross-Origin-Resource-Policy'] = 'same-origin'
+    response.headers['Feature-Policy'] = "accelerometer 'none'; camera 'none'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; payment 'none'; usb 'none'"
     return response
 
 
