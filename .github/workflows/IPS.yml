@@ -99,16 +99,22 @@ jobs:
             
             echo "Excluding IPs pattern: $GREP_PATTERN"
             
-            # Проверяем наличие логов
-            LOGS=$(docker logs project-nginx-proxy-1 2>&1)
-            if [ -z "$LOGS" ]; then
-              echo "No Nginx logs found"
-              exit 0
+            # Создаем временный файл для хранения всех логов
+            TEMP_LOG_FILE=$(mktemp)
+            
+            # Получаем текущие логи из контейнера
+            docker logs project-nginx-proxy-1 2>&1 > "$TEMP_LOG_FILE"
+            
+            # Если есть предыдущие логи, добавляем их
+            if [ -f "/var/log/nginx/access.log" ]; then
+              cat "/var/log/nginx/access.log" >> "$TEMP_LOG_FILE"
             fi
             
-            # Фильтруем логи nginx
-            echo "Nginx Logs (excluding localhost, current runner and whitelisted IPs):"
-            echo "$LOGS" | grep -Ev "$GREP_PATTERN" || {
+            # Сортируем логи по времени и фильтруем
+            echo "All Nginx Logs (excluding localhost, current runner and whitelisted IPs):"
+            sort -t '[' -k2 "$TEMP_LOG_FILE" | grep -Ev "$GREP_PATTERN" || {
               echo "All logs were filtered out by pattern"
-              exit 0
             }
+            
+            # Очищаем временный файл
+            rm -f "$TEMP_LOG_FILE"
