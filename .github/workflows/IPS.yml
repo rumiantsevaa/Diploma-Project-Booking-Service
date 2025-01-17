@@ -93,15 +93,8 @@ jobs:
             # Создаем временный файл для логов
             TEMP_LOG_FILE=$(mktemp)
             
-            # Получаем все логи из контейнера и сохраняем во временный файл
+            # Получаем все логи из контейнера
             docker logs project-nginx-proxy-1 > "$TEMP_LOG_FILE" 2>&1
-            
-            # Проверяем наличие логов
-            if [ ! -s "$TEMP_LOG_FILE" ]; then
-              echo "No Nginx logs found"
-              rm -f "$TEMP_LOG_FILE"
-              exit 0
-            fi
             
             # Формируем список IP для исключения
             EXCLUDE_IPS=("127.0.0.1" "$CURRENT_IP")
@@ -114,28 +107,27 @@ jobs:
             printf '%s\n' "${EXCLUDE_IPS[@]}"
             
             echo "Filtered Nginx Logs:"
-            FILTERED_LOG_FILE=$(mktemp)
             
-            # Фильтруем логи nginx
+            # Добавим отладочную информацию
+            echo "Debug: Total lines in log before filtering: $(wc -l < "$TEMP_LOG_FILE")"
+            
+            # Фильтруем логи nginx с более точной проверкой
             while IFS= read -r line; do
-              SKIP=0
-              for ip in "${EXCLUDE_IPS[@]}"; do
-                if [[ $line == *"$ip"* ]]; then
-                  SKIP=1
-                  break
+              if [[ -n "$line" ]]; then  # Проверяем, что строка не пустая
+                SKIP=0
+                for ip in "${EXCLUDE_IPS[@]}"; do
+                  # Извлекаем IP адрес из строки лога
+                  LOG_IP=$(echo "$line" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+                  if [[ "$LOG_IP" == "$ip" ]]; then
+                    SKIP=1
+                    break
+                  fi
+                done
+                if [ $SKIP -eq 0 ]; then
+                  echo "$line"
                 fi
-              done
-              if [ $SKIP -eq 0 ]; then
-                echo "$line" >> "$FILTERED_LOG_FILE"
               fi
             done < "$TEMP_LOG_FILE"
             
-            # Проверяем, есть ли отфильтрованные логи
-            if [ ! -s "$FILTERED_LOG_FILE" ]; then
-              echo "All logs were filtered out"
-            else
-              cat "$FILTERED_LOG_FILE"
-            fi
-            
-            # Очищаем временные файлы
-            rm -f "$TEMP_LOG_FILE" "$FILTERED_LOG_FILE"
+            # Очищаем временный файл
+            rm -f "$TEMP_LOG_FILE"
