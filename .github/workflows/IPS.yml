@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       reason:
-        description: 'Reason for running workflow'
+        description: 'Test running workflow'
         required: false
         default: 'Manual trigger'
   
