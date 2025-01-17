@@ -610,3 +610,36 @@ Spectre Vulnerability Mitigation:
 
 Eliminated CSP wildcard directives completely.
 All changes have been tested and verified through ZAP security scans, confirming the successful mitigation of identified vulnerabilities.
+
+17.01
+--- UNDER ATTACK MODE & ZAP SCAN CONFIGURATION ---
+Cloudflare Under Attack Mode enabled.
+Added Under Attack Mode implementation with Cloudflare integration:
+* Temporary IP whitelisting mechanism for security tools
+* Automated management of Cloudflare firewall rules
+* Protection against DDoS and malicious attacks
+
+ZAP Security Scanning Integration:
+1. Enhanced deployment workflow to support ZAP scans:
+   - Added IP whitelisting step before scan
+   - Implemented IP cleanup after scan completion
+   - Automated Cloudflare API integration
+
+2. Workflow steps for ZAP scanning:
+   * Get current GitHub Actions runner IP
+   * Temporarily whitelist IP in Cloudflare
+   * Run ZAP security scan
+   * Remove IP from whitelist after completion
+
+3. Cloudflare API Integration:
+   * Added CLOUDFLARE_ZONE_ID and CLOUDFLARE_API_KEY secrets
+   * Implemented API calls for firewall rules management
+   * Automated cleanup of temporary whitelist entries
+
+This enhancement allows:
+- Secure automated security scanning during deployment
+- Protection against unauthorized access attempts
+- Clean separation between security tools and potential threats
+- Automated management of security exceptions
+
+The implementation ensures that security scans can run successfully while maintaining strict security measures against potential attacks.
