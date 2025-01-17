@@ -1,0 +1,26 @@
+name: Intrusion Preventetion System Workflow
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for running workflow'
+        required: false
+        default: 'Manual trigger'
+  
+  # Trigger on changes to this file
+  push:
+    paths:
+      - '.github/workflows/manual-workflow.yml'
+
+jobs:
+  your-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      # Add your workflow steps here
+      - name: Example step
+        run: echo "Running workflow..."
