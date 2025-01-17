@@ -357,11 +357,6 @@ jobs:
               -I \
               -j \
               --auto
-
-        - name: Remove IP for GitHub Actions from Cloudflare whitelist
-          run: |
-            curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/firewall/access_rules/rules/${{ env.IP }}" \
-              -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_KEY }}"
             
         - name: Copy /netdata files
           uses: appleboy/scp-action@master
