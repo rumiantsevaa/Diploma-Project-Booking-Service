@@ -22,10 +22,26 @@ jobs:
       - name: Get Cloudflare Whitelisted IPs
         id: get_whitelist
         run: |
-          WHITELIST=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/firewall/access_rules/rules" \
+          # Получаем IP из Cloudflare
+          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/firewall/access_rules/rules" \
             -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_KEY }}" \
-            -H "Content-Type: application/json" | \
-            jq -r '.result[] | select(.mode=="whitelist") | .configuration.value' | tr '\n' '|' | sed 's/|$//')
+            -H "Content-Type: application/json")
+          
+          # Проверяем успешность запроса
+          if [ "$(echo $RESPONSE | jq -r '.success')" != "true" ]; then
+            echo "Error getting IPs from Cloudflare"
+            exit 1
+          fi
+          
+          # Форматируем IP-адреса
+          WHITELIST=$(echo $RESPONSE | \
+            jq -r '.result[] | select(.mode=="whitelist") | .configuration.value' | \
+            sort -u | \  # Убираем дубликаты
+            tr '\n' '|' | \
+            sed 's/|$//' | \  # Убираем последний разделитель
+            sed 's/\./\\./g')  # Экранируем точки для grep
+          
+          echo "Whitelisted IPs: $WHITELIST"
           echo "WHITELIST_IPS=$WHITELIST" >> $GITHUB_ENV
 
       - name: SSH and Fail2Ban Status Check
@@ -88,6 +104,11 @@ jobs:
           envs: WHITELIST_IPS
           script: |
             echo "Nginx Logs (excluding localhost and whitelisted IPs):"
-            # Create a grep pattern that excludes both localhost and whitelisted IPs
-            GREP_PATTERN="127\.0\.0\.1$(if [ ! -z "$WHITELIST_IPS" ]; then echo "|$WHITELIST_IPS"; fi)"
+            if [ -z "$WHITELIST_IPS" ]; then
+              echo "No whitelisted IPs found, only excluding localhost"
+              GREP_PATTERN="127\.0\.0\.1"
+            else
+              echo "Excluding localhost and whitelisted IPs: $WHITELIST_IPS"
+              GREP_PATTERN="127\.0\.0\.1|$WHITELIST_IPS"
+            fi
             docker logs project-nginx-proxy-1 2>&1 | grep -Ev "$GREP_PATTERN"
