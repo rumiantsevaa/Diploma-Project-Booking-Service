@@ -641,4 +641,18 @@ This enhancement allows:
 - Clean separation between security tools and potential threats
 - Automated management of security exceptions
 
+IPS.yml (Intrusion Prevention System Workflow) is a GitHub Actions configuration file created for monitoring and protecting against attacks.
+This file helps to:
+Automate security monitoring
+Quickly detect suspicious activity
+Track unauthorized access attempts
+Monitor the effectiveness of security settings
+
+I also added ban rules for suspicious requests on CloudeFlare. There will be a blacklist for such users.
+For testing and scanning, a whitelist has been created, which automatically adds those addresses that can scan the site.
+The whitelist takes precedence over blocking rules, because:
+IPs from the whitelist are explicitly marked as mode=="whitelist"
+These IPs are excluded from log filtering
+Cloudflare applies whitelist rules before blocking rules
+
 The implementation ensures that security scans can run successfully while maintaining strict security measures against potential attacks.
