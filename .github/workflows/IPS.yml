@@ -9,6 +9,12 @@ on:
         default: 'Manual trigger'
   
   push:
+    paths-ignore:
+      - 'version.txt'
+      - 'project.log'
+      - 'netdata/dashboards/**'
+      - 'last_successful_version.txt'
+      - '.github/workflows/deploy.yml'
     paths:
       - '.github/workflows/IPS.yml'
 
