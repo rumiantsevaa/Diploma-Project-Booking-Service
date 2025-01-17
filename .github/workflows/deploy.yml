@@ -333,10 +333,14 @@ jobs:
 
         - name: Add IP for GitHub Actions to Cloudflare whitelist
           run: |
-            curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/firewall/access_rules/rules" \
-              -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_KEY }}" \
+            curl -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/firewall/access_rules/rules" \
+              -H "Authorization: Bearer $CLOUDFLARE_API_KEY" \
               -H "Content-Type: application/json" \
-              --data '{"mode":"allow","configuration":{"target":"ip","value":"${{ env.IP }}"},"notes":"Allow GitHub Actions runner"}'
+              --data '{
+                "mode":"whitelist",
+                "configuration":{"target":"ip","value":"'"$IP"'"},
+                "notes":"Allow GitHub Actions runner"
+              }'
 
           # ZAP 
         - name: ZAP Scan with Official Stable Image
