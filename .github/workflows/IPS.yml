@@ -116,8 +116,10 @@ jobs:
             echo -e "\nExcluding IPs:"
             printf '%s\n' "${EXCLUDE_IPS[@]}"
             
-            # Фильтруем логи nginx
             echo -e "\nFiltered Nginx Logs:"
+            FILTERED_LOG_FILE=$(mktemp)
+            
+            # Фильтруем логи nginx
             while IFS= read -r line; do
               SKIP=0
               for ip in "${EXCLUDE_IPS[@]}"; do
@@ -127,9 +129,16 @@ jobs:
                 fi
               done
               if [ $SKIP -eq 0 ]; then
-                echo "$line"
+                echo "$line" >> "$FILTERED_LOG_FILE"
               fi
             done < "$TEMP_LOG_FILE"
             
-            # Очищаем временный файл
-            rm -f "$TEMP_LOG_FILE"
+            # Проверяем, есть ли отфильтрованные логи
+            if [ ! -s "$FILTERED_LOG_FILE" ]; then
+              echo "All logs were filtered out"
+            else
+              cat "$FILTERED_LOG_FILE"
+            fi
+            
+            # Очищаем временные файлы
+            rm -f "$TEMP_LOG_FILE" "$FILTERED_LOG_FILE"
