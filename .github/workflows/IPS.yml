@@ -1,7 +1,6 @@
-name: Intrusion Preventetion System Workflow
+name: Intrusion Prevention System Workflow
 
 on:
-  # Manual trigger
   workflow_dispatch:
     inputs:
       reason:
@@ -9,18 +8,74 @@ on:
         required: false
         default: 'Manual trigger'
   
-  # Trigger on changes to this file
   push:
     paths:
-      - '.github/workflows/manual-workflow.yml'
+      - '.github/workflows/IPS.yml'
 
 jobs:
-  your-job:
+  security-monitoring:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      
-      # Add your workflow steps here
-      - name: Example step
-        run: echo "Running workflow..."
+
+      - name: SSH and Fail2Ban Status Check
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.AWS_SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            echo "Welcome to your Intrusion Prevention System, majesty. This script collects your current configuration and works as a monitoring tool (IDS)."
+            
+            # SSH Module
+            echo "**************************************************************************************************"
+            echo "Security settings /etc/ssh/sshd_config"
+            grep -E 'PermitRootLogin no|LoginGraceTime 60|ClientAliveInterval 15|ClientAliveCountMax 2' /etc/ssh/sshd_config
+            
+            # Fail2Ban Status
+            echo "**************************************************************************************************"
+            echo "Fail2Ban status:"
+            systemctl status fail2ban | grep -E 'Active|Loaded|Main PID'
+            
+            # Custom fail2ban policy
+            echo "**************************************************************************************************"
+            echo "Current custom fail2ban sshd-custom policy:"
+            cat /etc/fail2ban/filter.d/sshd-custom.conf
+            
+            # Banned IPs
+            echo "**************************************************************************************************"
+            echo "Banned IPs in fail2ban (only today):"
+            grep "$(date '+%Y-%m-%d')" /var/log/fail2ban.log | grep 'Ban'
+            
+            # SSH logs
+            echo "**************************************************************************************************"
+            echo "SSH logs (only today):"
+            grep "$(date '+%Y-%m-%d')" /var/log/auth.log | grep -E "$(date '+%Y-%m-%d')T"
+            
+            # Fail2ban recent actions
+            echo "**************************************************************************************************"
+            echo "Actions from fail2ban.log (last 10 lines):"
+            tail -n 10 /var/log/fail2ban.log
+
+      - name: Check Cloudflare Security Level
+        run: |
+          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/settings/security_level" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_KEY }}" \
+            -H "Content-Type: application/json")
+          
+          SECURITY_LEVEL=$(echo $RESPONSE | jq -r '.result.value')
+          MODIFIED_DATE=$(echo $RESPONSE | jq -r '.result.modified_on')
+          
+          echo "Security Level: $SECURITY_LEVEL"
+          echo "Modified: $MODIFIED_DATE"
+
+      - name: Get Nginx Logs
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.AWS_SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            echo "Nginx Logs (excluding localhost access):"
+            docker logs project-nginx-proxy-1 2>&1 | grep -v "127.0.0.1"
