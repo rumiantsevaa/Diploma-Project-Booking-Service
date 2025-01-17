@@ -9,6 +9,7 @@ on:
       - 'project.log'  # Игнорировать изменения в project.log
       - 'netdata/dashboards/**'  # Игнорировать изменения в dashboards/
       - 'last_successful_version.txt'  # Игнорировать изменения в last_successful_version.txt
+      - '.github/workflows/IPS.yml'  # Игнорировать изменения в IPS.yml
      
 jobs:
   deploy:
