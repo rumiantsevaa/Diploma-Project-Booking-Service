@@ -88,23 +88,17 @@ jobs:
               jq -r '.result[] | select(.mode=="whitelist") | .configuration.value' | \
               sort -u | \
               tr '\n' '|' | \
-              sed 's/|$//' | \
-              sed 's/\./\\./g')
+              sed 's/|$//')
             
-            # Добавляем текущий IP в паттерн
-            GREP_PATTERN="127\.0\.0\.1|$CURRENT_IP"
-            if [ ! -z "$WHITELIST" ]; then
-              GREP_PATTERN="$GREP_PATTERN|$WHITELIST"
-            fi
-            
-            echo "Excluding IPs pattern: $GREP_PATTERN"
-
             # Создаем временный файл для логов
             TEMP_LOG_FILE=$(mktemp)
-
+            
             # Получаем все логи из контейнера и сохраняем во временный файл
             docker logs project-nginx-proxy-1 > "$TEMP_LOG_FILE" 2>&1
-                  
+            
+            echo -e "\nFull Nginx Logs before filtering:"
+            cat "$TEMP_LOG_FILE"
+            
             # Проверяем наличие логов
             if [ ! -s "$TEMP_LOG_FILE" ]; then
               echo "No Nginx logs found"
@@ -112,11 +106,30 @@ jobs:
               exit 0
             fi
             
-              # Фильтруем логи nginx
-            echo "Nginx Logs (excluding localhost, current runner and whitelisted IPs):"
-            cat "$TEMP_LOG_FILE" 
-            cat "$TEMP_LOG_FILE" | grep -Ev "$GREP_PATTERN" || {
-              echo "All logs were filtered out by pattern"
-            }
+            # Формируем список IP для исключения
+            EXCLUDE_IPS=("127.0.0.1" "$CURRENT_IP")
+            if [ ! -z "$WHITELIST" ]; then
+              IFS='|' read -ra WHITELIST_IPS <<< "$WHITELIST"
+              EXCLUDE_IPS+=("${WHITELIST_IPS[@]}")
+            fi
+            
+            echo -e "\nExcluding IPs:"
+            printf '%s\n' "${EXCLUDE_IPS[@]}"
+            
+            # Фильтруем логи nginx
+            echo -e "\nFiltered Nginx Logs:"
+            while IFS= read -r line; do
+              SKIP=0
+              for ip in "${EXCLUDE_IPS[@]}"; do
+                if [[ $line == *"$ip"* ]]; then
+                  SKIP=1
+                  break
+                fi
+              done
+              if [ $SKIP -eq 0 ]; then
+                echo "$line"
+              fi
+            done < "$TEMP_LOG_FILE"
+            
             # Очищаем временный файл
             rm -f "$TEMP_LOG_FILE"
