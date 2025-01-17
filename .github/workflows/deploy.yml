@@ -324,6 +324,20 @@ jobs:
             severity: 'CRITICAL,HIGH,MEDIUM'  # Уровень серьезности интересующих уязвимостей
             timeout: '5m'
 
+        - name: Get current IP address for GitHub Actions
+          id: get_ip
+          run: |
+            IP=$(curl -s https://api.ipify.org)
+            echo "Current IP: $IP"
+            echo "IP=$IP" >> $GITHUB_ENV
+
+        - name: Add IP for GitHub Actions to Cloudflare whitelist
+          run: |
+            curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/firewall/access_rules/rules" \
+              -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_KEY }}" \
+              -H "Content-Type: application/json" \
+              --data '{"mode":"allow","configuration":{"target":"ip","value":"${{ env.IP }}"},"notes":"Allow GitHub Actions runner"}'
+
           # ZAP 
         - name: ZAP Scan with Official Stable Image
           run: |
@@ -335,6 +349,11 @@ jobs:
               -I \
               -j \
               --auto
+
+        - name: Remove IP for GitHub Actions from Cloudflare whitelist
+          run: |
+            curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/firewall/access_rules/rules/${{ env.IP }}" \
+              -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_KEY }}"
             
         - name: Copy /netdata files
           uses: appleboy/scp-action@master
