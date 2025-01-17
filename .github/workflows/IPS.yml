@@ -99,6 +99,16 @@ jobs:
             
             echo "Excluding IPs pattern: $GREP_PATTERN"
             
+            # Проверяем наличие логов
+            LOGS=$(docker logs project-nginx-proxy-1 2>&1)
+            if [ -z "$LOGS" ]; then
+              echo "No Nginx logs found"
+              exit 0
+            fi
+            
             # Фильтруем логи nginx
             echo "Nginx Logs (excluding localhost, current runner and whitelisted IPs):"
-            docker logs project-nginx-proxy-1 2>&1 | grep -Ev "$GREP_PATTERN"
+            echo "$LOGS" | grep -Ev "$GREP_PATTERN" || {
+              echo "All logs were filtered out by pattern"
+              exit 0
+            }
