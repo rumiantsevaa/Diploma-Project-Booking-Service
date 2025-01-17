@@ -19,6 +19,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Get Cloudflare Whitelisted IPs
+        id: get_whitelist
+        run: |
+          WHITELIST=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/firewall/access_rules/rules" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_KEY }}" \
+            -H "Content-Type: application/json" | \
+            jq -r '.result[] | select(.mode=="whitelist") | .configuration.value' | tr '\n' '|' | sed 's/|$//')
+          echo "WHITELIST_IPS=$WHITELIST" >> $GITHUB_ENV
+
       - name: SSH and Fail2Ban Status Check
         uses: appleboy/ssh-action@v0.1.5
         with:
@@ -70,12 +79,15 @@ jobs:
           echo "Security Level: $SECURITY_LEVEL"
           echo "Modified: $MODIFIED_DATE"
 
-      - name: Get Nginx Logs
+      - name: Get Filtered Nginx Logs
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.AWS_SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.AWS_SSH_KEY }}
+          envs: WHITELIST_IPS
           script: |
-            echo "Nginx Logs (excluding localhost access):"
-            docker logs project-nginx-proxy-1 2>&1 | grep -v "127.0.0.1"
+            echo "Nginx Logs (excluding localhost and whitelisted IPs):"
+            # Create a grep pattern that excludes both localhost and whitelisted IPs
+            GREP_PATTERN="127\.0\.0\.1$(if [ ! -z "$WHITELIST_IPS" ]; then echo "|$WHITELIST_IPS"; fi)"
+            docker logs project-nginx-proxy-1 2>&1 | grep -Ev "$GREP_PATTERN"
