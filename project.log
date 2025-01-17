@@ -634,7 +634,6 @@ ZAP Security Scanning Integration:
 3. Cloudflare API Integration:
    * Added CLOUDFLARE_ZONE_ID and CLOUDFLARE_API_KEY secrets
    * Implemented API calls for firewall rules management
-   * Automated cleanup of temporary whitelist entries
 
 This enhancement allows:
 - Secure automated security scanning during deployment
