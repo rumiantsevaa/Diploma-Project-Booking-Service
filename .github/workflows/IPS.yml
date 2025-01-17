@@ -114,6 +114,7 @@ jobs:
             
               # Фильтруем логи nginx
             echo "Nginx Logs (excluding localhost, current runner and whitelisted IPs):"
+            cat "$TEMP_LOG_FILE" 
             cat "$TEMP_LOG_FILE" | grep -Ev "$GREP_PATTERN" || {
               echo "All logs were filtered out by pattern"
             }
