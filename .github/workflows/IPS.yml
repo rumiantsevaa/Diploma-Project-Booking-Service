@@ -96,9 +96,6 @@ jobs:
             # Получаем все логи из контейнера и сохраняем во временный файл
             docker logs project-nginx-proxy-1 > "$TEMP_LOG_FILE" 2>&1
             
-            echo -e "\nFull Nginx Logs before filtering:"
-            cat "$TEMP_LOG_FILE"
-            
             # Проверяем наличие логов
             if [ ! -s "$TEMP_LOG_FILE" ]; then
               echo "No Nginx logs found"
@@ -113,10 +110,10 @@ jobs:
               EXCLUDE_IPS+=("${WHITELIST_IPS[@]}")
             fi
             
-            echo -e "\nExcluding IPs:"
+            echo "Excluding IPs:"
             printf '%s\n' "${EXCLUDE_IPS[@]}"
             
-            echo -e "\nFiltered Nginx Logs:"
+            echo "Filtered Nginx Logs:"
             FILTERED_LOG_FILE=$(mktemp)
             
             # Фильтруем логи nginx
