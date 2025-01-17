@@ -320,8 +320,8 @@ jobs:
           with:
             image-ref: 'serpentariya/booking_app:${{ needs.deploy.outputs.version }}'
             format: 'table'
-            exit-code: '0'  # Чтобы деплой продолжался при нахождении уязвимостей
-            severity: 'CRITICAL,HIGH,MEDIUM'  # Уровень серьезности интересующих уязвимостей
+            exit-code: '0' 
+            severity: 'CRITICAL,HIGH,MEDIUM' 
             timeout: '5m'
 
         - name: Get current IP address for GitHub Actions
@@ -332,6 +332,9 @@ jobs:
             echo "IP=$IP" >> $GITHUB_ENV
 
         - name: Add IP for GitHub Actions to Cloudflare whitelist
+          env:
+            CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+            CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
           run: |
             curl -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/firewall/access_rules/rules" \
               -H "Authorization: Bearer $CLOUDFLARE_API_KEY" \
