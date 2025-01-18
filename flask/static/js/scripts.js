@@ -30,5 +30,10 @@ async function book(event) {
     });
 
     const result = await response.json();
-    console.log(result);
+    if (result.message) {
+        alert(result.message);
+        window.bookFormDialog.close();
+    } else {
+        alert(result.error);
+    }
 }

@@ -2,76 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
     <title>BBooking Diploma Project</title>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" nonce="{{ g.csp_nonce }}">
-    <!--    <script nonce="{{ g.csp_nonce }}">-->
-    <!--        if (window.trustedTypes && trustedTypes.createPolicy) {-->
-    <!--            trustedTypes.createPolicy('default', {-->
-    <!--                createHTML: (string) => string,-->
-    <!--                createScript: (string) => string,-->
-    <!--                createScriptURL: (string) => string-->
-    <!--            });-->
-    <!--        }-->
-    <!--    </script>-->
-    <script src="{{ url_for('static', filename='js/scripts.js') }}" defer nonce="{{ g.csp_nonce }}"></script>
+    <link href="{{ url_for('static', filename='favicon.ico') }}" rel="icon" type="image/x-icon">
+    <link href="{{ url_for('static', filename='css/styles.min.css') }}" nonce="{{ g.csp_nonce }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='fonts/web/inter.min.css') }}" nonce="{{ g.csp_nonce }}" rel="stylesheet">
+    <script nonce="{{ g.csp_nonce }}" src="{{ url_for('static', filename='js/scripts.min.js') }}"
+            type="module"></script>
 </head>
-<body>
-<a class="skip-link" href="#main">Перейти к основному содержанию</a>
-<div class="container">
-    <header>
-        <h1 class="welcome-header">Welcome to BBooking, choose your Hotel.</h1>
-        <p class="tagline">Find your next adventure with ease and style—explore the world without limits! Be trendy!
+<body class="min-h-screen">
+<a class="skip-link fixed -top-10 bg-white p-2 focus:top-2" href="#main">Перейти к основному содержанию</a>
+<div class="grid grid-rows-[auto_1fr_auto] min-h-screen">
+    <header class="p-5 container flex flex-col gap-5">
+        <h1 class="welcome-header text-center text-4xl">Welcome to BBooking, choose your Hotel.</h1>
+        <p class="tagline text-center">Find your next adventure with ease and style—explore the world without limits! Be
+            trendy!
             Bbooking!</p>
     </header>
-    <main id="main">
-        <div class="hotel-grid">
+    <main class="p-5 container" id="main">
+        <div class="hotel-grid justify-center grid gap-5 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
             {% for hotel in hotels %}
-            <div class="hotel-card">
-                <img src="{{ url_for('static', filename='images/' + hotel.image_path) }}"
-                     alt=""
-                     class="hotel-image">
-                <h2>{{ hotel.name }}</h2>
+            <div class="hotel-card border-4 border-black flex flex-col gap-5 text-center rounded-md p-3 bg-black text-white">
+                <img alt=""
+                     class="hotel-image rounded-md"
+                     src="{{ url_for('static', filename='images/' + hotel.image_path) }}">
+                <h2 class="font-bold text-2xl">{{ hotel.name }}</h2>
                 <p>{{ hotel.location }}</p>
                 <p>{{ hotel.description }}</p>
                 <p class="price">Price per night: {{ hotel.price_per_night }}€</p>
-                <button type="button" class="book-btn"
-                        data-hotel-id="{{ hotel.id }}"
-                        data-hotel-name="{{ hotel.name }}">
+                <button class="book-btn p-5 bg-white text-black text-2xl rounded-xl" data-hotel-id="{{ hotel.id }}"
+                        data-hotel-name="{{ hotel.name }}"
+                        type="button">
                     Book
                 </button>
             </div>
             {% endfor %}
         </div>
     </main>
-    <footer class="site-footer">
-        <p>
-            This is not a real booking site; bbooking is a diploma project website. All materials are licensed under the
+    <footer class="site-footer bg-black text-white p-5 text-center">
+        <p class="italic">
+            <b>This is not a real booking site; bbooking is a diploma project website.</b>
+            All materials are licensed under
+            the
             MIT
             License. Deployment and development are managed by @rumiantsevaa. For more information, visit <a
                 href="https://github.com/rumiantsevaa/Diploma-Project-Booking-Service" target="_blank">GitHub</a>.
+
         </p>
     </footer>
 </div>
 <div id="templates">
     <template id="booking-form-template">
-        <dialog id="booking-form-dialog">
-            <form method="dialog">
-                <button type="submit">Закрыть</button>
-            </form>
-            <main>
-                <h2>Booking Form</h2>
-                <p>Hotel: <slot name="hotel-name"></slot></p>
-                <form id="book-form" method="post" action="/book/">
-                    <input type="hidden" id="hotel-id" name="hotel-id">
-                    <label for="name">Name:</label>
-                    <input type="text" id="name" name="name" required autocomplete="name">
-                    <label for="phone">Phone:</label>
-                    <input type="tel" id="phone" name="phone" required autocomplete="tel">
-                    <button type="submit">Book</button>
+        <dialog class="p-5 rounded-md bg-white text-black xl:w-6/12" id="booking-form-dialog">
+            <div class="flex flex-col gap-2.5">
+                <form class="ms-auto" method="dialog">
+                    <button class="p-3" type="submit">Закрыть</button>
                 </form>
-            </main>
+                <main class="flex flex-col gap-5">
+                    <h2 class="text-center text-4xl font-bold">Booking Form</h2>
+                    <p class="text-center text-2xl">Hotel:
+                        <slot name="hotel-name"></slot>
+                    </p>
+                    <form action="/book/" id="book-form" method="post">
+                        <div class="flex flex-col gap-10">
+                            <div class="flex flex-col gap-2.5">
+                                <input id="hotel-id" name="hotel-id" type="hidden">
+                                <label for="name">Name</label>
+                                <input autocomplete="name" autofocus class="border border-black rounded-md p-3"
+                                       id="name"
+                                       name="name"
+                                       required type="text">
+                                <label for="phone">Phone</label>
+                                <input autocomplete="tel" class="border border-black rounded-md p-3" id="phone"
+                                       name="phone"
+                                       required type="tel">
+                            </div>
+                            <button class="p-3 bg-black text-white text-xl rounded-md" type="submit">Book</button>
+                        </div>
+                    </form>
+                </main>
+            </div>
         </dialog>
     </template>
 </div>
