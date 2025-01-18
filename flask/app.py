@@ -84,14 +84,14 @@ def add_security_headers(response):
     nonce = getattr(g, 'csp_nonce', '')
     csp = (
         "default-src 'self'; "
-        f"script-src 'self' 'nonce-{nonce}'; "
+        f"script-src 'self' 'nonce-{nonce}' 'strict-dynamic'; "
         f"style-src 'self' 'nonce-{nonce}'; "
         "img-src 'self' data: https://bbooking.pp.ua; "
         "frame-ancestors 'none'; "
         "base-uri 'self'; "
         "form-action 'self'; "
         "require-trusted-types-for 'script'; "
-	"trusted-types default; "
+	"trusted-types bookingPolicy default; "
         "object-src 'none'"
     ).format(nonce=nonce)
     response.headers['Content-Security-Policy'] = csp
