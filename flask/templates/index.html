@@ -4,6 +4,15 @@
     <title>BBooking Diploma Project</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" nonce="{{ g.csp_nonce }}">
+    <script nonce="{{ g.csp_nonce }}">
+    if (window.trustedTypes && trustedTypes.createPolicy) {
+        trustedTypes.createPolicy('default', {
+            createHTML: (string) => string,
+            createScript: (string) => string,
+            createScriptURL: (string) => string
+        });
+    }
+</script>
     <script src="{{ url_for('static', filename='js/scripts.js') }}" defer nonce="{{ g.csp_nonce }}"></script>
 </head>
 <body>
