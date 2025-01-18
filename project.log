@@ -656,3 +656,34 @@ These IPs are excluded from log filtering
 Cloudflare applies whitelist rules before blocking rules
 
 The implementation ensures that security scans can run successfully while maintaining strict security measures against potential attacks.
+
+18.01
+
+* * * * * * Security and performance improvements * * * * * * 
+
+~ Security:
+
+/CSP and Nonce: Protection against XSS attacks via Content Security Policy (CSP) and using a unique nonce value for each file. 
+Implementation on three levels:
+- Flask (Backend): Generate nonce in before_request using random tokens.
+- Nginx: Pass nonce value via request header.
+- Frontend (HTML): Inject nonce into <link> and <script> tags.
+/SQL injection: 
+Protection via parameterized queries in SQL.
+/Additional security headers: 
+- Use headers for clickjacking protection (X-Frame-Options), cross-site attack protection (CORS), use of secure connections (Strict-Transport-Security) and access control (Permissions-Policy).
+
+~ Performance optimization:
+
+/Minification and modularity: Use minified CSS and JS files for faster loading and code optimization.
+/Using AVIF: Using AVIF for images to reduce file size without losing quality.
+/Gzip compression and buffering in Nginx: Enabling compression to reduce the amount of data transferred and configuring buffers to improve performance.
+
+~ Data validation:
+
+/Phone validation: Regular expressions to check that phone numbers are in the correct format.
+/Protection against invalid data: Strongly validate input data before sending.
+
+These improvements enhance security (XSS, SQL injection protection) and optimize site performance (compression, caching, image loading).
+
+Moreover, I've added 3 new hotels to the website and improved the visual design of the website during the development process.
