@@ -193,8 +193,12 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.LAST_SUCCESSFUL_VERSION }}
             docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.LAST_SUCCESSFUL_VERSION }}
             docker-compose up -d --force-recreate
+
+            # Create a flag file to indicate rollback occurred
+            echo "ROLLBACK_PERFORMED=true" > ~/rollback_status
             exit 1
-          }
+            }
+
 
           # Check deployment status
           if [ $? -ne 0 ]; then
@@ -216,6 +220,32 @@ jobs:
           
           echo "Deployment successful - both containers are running and healthy"
 
+    - name: Check rollback status
+      id: check_rollback
+      if: always()
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.AWS_SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.AWS_SSH_KEY }}
+        script: |
+          if [ -f ~/rollback_status ]; then
+            cat ~/rollback_status
+            rm ~/rollback_status
+            exit 1
+          fi
+
+    - name: Exit workflow after rollback
+      if: failure() && steps.check_rollback.outcome == 'failure'
+      run: |
+        echo "Deployment failed and rollback was performed. Stopping workflow."
+        exit 1
+    
+    - name: Continue with remaining steps
+      if: success() && steps.check_rollback.outcome == 'success'
+      run: |
+        echo "Deployment successful, continuing with remaining steps..."
+
     - name: Update last successful version
       if: success() && steps.deploy_step.outcome == 'success'
       run: |
@@ -224,13 +254,7 @@ jobs:
             git config --local user.name "github-actions[bot]"
             git add last_successful_version.txt
             git commit -m "Update last successful version to ${{ env.NEW_VERSION }}"
-            git push
-        
-    - name: Exit workflow after rollback
-      if: failure() && steps.deploy_step.outcome == 'failure'
-      run: |
-            echo "Deployment failed and rollback was performed. Stopping workflow."
-            exit 0
+            git push        
 
     - name: SSL Certificate Management
       uses: appleboy/ssh-action@v0.1.5
