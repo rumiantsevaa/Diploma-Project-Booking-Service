@@ -39,7 +39,7 @@ hotels = [
     ('Modern Cottage Retreat', 'Canada, Rocky Mountains', 90.00, 'Contemporary cottage surrounded by breathtaking mountain scenery', 'modern_cottage.avif'),
     ('Skyline Skyscraper Hotel', 'Japan, Tokyo', 300.00, 'Magnificent skyscraper offering panoramic city views and world-class amenities', 'skyscraper.avif'), 
     ('Spanish Villa Resort', 'Spain, Andalusia', 200.00, 'Elegant villa inspired by traditional Spanish architecture, surrounded by olive groves', 'spain.avif'),
-    ('Norwegian Treehouse Retreat', 'Norway, Fjords', 120.00, 'Unique hotel among Norwegian pines with panoramic view', 'treehouse.avif')
+    ('Norwegian Treehouse Retreat', 'Norway, Fjords', 120.00, 'Unique hotel among Norwegian pines with panoramic view and luxurious amenities', 'treehouse.avif')
 ]
 
 
