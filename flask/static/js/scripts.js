@@ -1,5 +1,14 @@
 // static/js/scripts.js
 document.addEventListener('DOMContentLoaded', function() {
+    const policy = trustedTypes.defaultPolicy || trustedTypes.policies.get('bookingPolicy');
+
+    // Safe DOM manipulation function
+    function setInnerHTML(element, content) {
+        if (element && content) {
+            element.innerHTML = policy.createHTML(content);
+        }
+    }
+
     // Handle booking button clicks
     document.querySelectorAll('.book-btn').forEach(button => {
         button.addEventListener('click', function() {
@@ -10,8 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('bookingForm').classList.remove('hidden');
             document.getElementById('hotelId').value = hotelId;
             
-            // Use TrustedDOMHandler for safe DOM manipulation
-            TrustedDOMHandler.updateBookingForm(hotelName);
+            // Use safe DOM manipulation
+            const hotelNameElement = document.getElementById('hotelNameBooking');
+            setInnerHTML(hotelNameElement, hotelName);
         });
     });
 
@@ -26,15 +36,17 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
+            const errorElement = document.getElementById('errorMessage');
             if (data.error) {
-                TrustedDOMHandler.showError(data.error);
+                setInnerHTML(errorElement, data.error);
             } else {
-                TrustedDOMHandler.showError('Booking successful!');
+                setInnerHTML(errorElement, 'Booking successful!');
                 form.reset();
             }
         })
         .catch(error => {
-            TrustedDOMHandler.showError('An error occurred during booking.');
+            const errorElement = document.getElementById('errorMessage');
+            setInnerHTML(errorElement, 'An error occurred during booking.');
         });
     });
 
@@ -42,6 +54,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('returnButton').addEventListener('click', function() {
         document.getElementById('bookingForm').classList.add('hidden');
         document.getElementById('hotelList').classList.remove('hidden');
-        TrustedDOMHandler.showError(''); // Clear any error messages
+        // Clear any error messages
+        const errorElement = document.getElementById('errorMessage');
+        setInnerHTML(errorElement, '');
     });
 });

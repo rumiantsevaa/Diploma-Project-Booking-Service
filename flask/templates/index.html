@@ -2,6 +2,21 @@
 <html>
 <head>
     <title>BBooking Diploma Project</title>
+    <script nonce="{{ g.csp_nonce }}">
+        if (window.trustedTypes && trustedTypes.createPolicy) {
+            trustedTypes.createPolicy('bookingPolicy', {
+                createHTML: (string) => {
+                    // Basic sanitization
+                    const sanitized = string
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#39;');
+                    return sanitized;
+                }
+            });
+        }
+    </script>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" nonce="{{ g.csp_nonce }}">
     <script src="{{ url_for('static', filename='js/trusted-dom.js') }}" defer nonce="{{ g.csp_nonce }}"></script>
