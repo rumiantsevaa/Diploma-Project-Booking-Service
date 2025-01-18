@@ -69,7 +69,6 @@ print("База данных обновлена.")
 
 app = Flask(__name__)
 
-
 @app.before_request
 def before_request():
     g.csp_nonce = request.headers.get('X-CSP-Nonce', secrets.token_urlsafe(32))
