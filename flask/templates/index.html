@@ -4,36 +4,6 @@
     <title>BBooking Diploma Project</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" nonce="{{ g.csp_nonce }}">
-    <script nonce="{{ g.csp_nonce }}">
-    if (window.trustedTypes && trustedTypes.createPolicy) {
-        const policy = trustedTypes.createPolicy('bookingPolicy', {
-            createHTML: (string) => {
-                // Sanitize hotel data
-                const sanitized = string
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;');
-                return sanitized;
-            },
-            createScript: (string) => {
-                // Only allow specific script patterns
-                if (string.match(/^(function\s*\(\)\s*\{[\s\S]*\}|\/\/ Booking script)$/)) {
-                    return string;
-                }
-                throw new Error('Invalid script content');
-            },
-            createScriptURL: (string) => {
-                // Only allow URLs from your domain
-                const url = new URL(string, window.location.origin);
-                if (url.origin === window.location.origin) {
-                    return string;
-                }
-                throw new Error('Invalid script URL');
-            }
-        });
-    }
-</script>
     <script src="{{ url_for('static', filename='js/trusted-dom.js') }}" defer nonce="{{ g.csp_nonce }}"></script>
     <script src="{{ url_for('static', filename='js/scripts.js') }}" defer nonce="{{ g.csp_nonce }}"></script>
 </head>

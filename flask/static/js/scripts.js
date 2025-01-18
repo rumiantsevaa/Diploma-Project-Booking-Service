@@ -30,12 +30,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 TrustedDOMHandler.showError(data.error);
             } else {
                 TrustedDOMHandler.showError('Booking successful!');
-                // Reset form after successful booking
                 form.reset();
             }
         })
         .catch(error => {
             TrustedDOMHandler.showError('An error occurred during booking.');
         });
+    });
+
+    // Add return button functionality
+    document.getElementById('returnButton').addEventListener('click', function() {
+        document.getElementById('bookingForm').classList.add('hidden');
+        document.getElementById('hotelList').classList.remove('hidden');
+        TrustedDOMHandler.showError(''); // Clear any error messages
     });
 });
