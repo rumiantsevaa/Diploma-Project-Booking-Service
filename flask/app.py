@@ -89,8 +89,6 @@ def add_security_headers(response):
         "frame-ancestors 'none'; "
         "base-uri 'self'; "
         "form-action 'self'; "
-        "require-trusted-types-for 'script'; "
-    "trusted-types default; "
         "object-src 'none'"
     ).format(nonce=nonce)
     response.headers['Content-Security-Policy'] = csp
