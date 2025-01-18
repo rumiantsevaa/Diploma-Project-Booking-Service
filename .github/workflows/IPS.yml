@@ -11,6 +11,9 @@ on:
   push:
     paths:
       - '.github/workflows/IPS.yml'
+      - '!version.txt'
+      - '!last_successful_version.txt'
+      - '!project.log'
 
 jobs:
   security-monitoring:
