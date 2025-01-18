@@ -1,67 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>BBooking Diploma Project</title>
-    <script nonce="{{ g.csp_nonce }}">
-        if (window.trustedTypes && trustedTypes.createPolicy) {
-            trustedTypes.createPolicy('bookingPolicy', {
-                createHTML: (string) => {
-                    // Basic sanitization
-                    const sanitized = string
-                        .replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;')
-                        .replace(/"/g, '&quot;')
-                        .replace(/'/g, '&#39;');
-                    return sanitized;
-                }
-            });
-        }
-    </script>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" nonce="{{ g.csp_nonce }}">
-    <script src="{{ url_for('static', filename='js/trusted-dom.js') }}" defer nonce="{{ g.csp_nonce }}"></script>
+    <!--    <script nonce="{{ g.csp_nonce }}">-->
+    <!--        if (window.trustedTypes && trustedTypes.createPolicy) {-->
+    <!--            trustedTypes.createPolicy('default', {-->
+    <!--                createHTML: (string) => string,-->
+    <!--                createScript: (string) => string,-->
+    <!--                createScriptURL: (string) => string-->
+    <!--            });-->
+    <!--        }-->
+    <!--    </script>-->
     <script src="{{ url_for('static', filename='js/scripts.js') }}" defer nonce="{{ g.csp_nonce }}"></script>
 </head>
 <body>
-    <div class="container" id="hotelList">
+<a class="skip-link" href="#main">Перейти к основному содержанию</a>
+<div class="container">
+    <header>
         <h1 class="welcome-header">Welcome to BBooking, choose your Hotel.</h1>
-        <p class="tagline">Find your next adventure with ease and style—explore the world without limits! Be trendy! Bbooking!</p>
+        <p class="tagline">Find your next adventure with ease and style—explore the world without limits! Be trendy!
+            Bbooking!</p>
+    </header>
+    <main id="main">
         <div class="hotel-grid">
             {% for hotel in hotels %}
-            <div class="hotel-card" data-hotel-id="{{ hotel.id }}">
-                <img src="{{ url_for('static', filename='images/' + hotel.image_path) }}" 
-                     alt="{{ hotel.name }}" 
+            <div class="hotel-card">
+                <img src="{{ url_for('static', filename='images/' + hotel.image_path) }}"
+                     alt=""
                      class="hotel-image">
                 <h2>{{ hotel.name }}</h2>
                 <p>{{ hotel.location }}</p>
                 <p>{{ hotel.description }}</p>
                 <p class="price">Price per night: {{ hotel.price_per_night }}€</p>
-                <button class="book-btn" 
-                        data-hotel-id="{{ hotel.id }}" 
+                <button type="button" class="book-btn"
+                        data-hotel-id="{{ hotel.id }}"
                         data-hotel-name="{{ hotel.name }}">
                     Book
                 </button>
             </div>
             {% endfor %}
         </div>
-    </div>
-
-    <div id="bookingForm" class="hidden">
-        <h1>Booking <span id="hotelNameBooking"></span></h1>
-        <p id="errorMessage" class="error-message"></p>
-        <form id="bookForm" class="booking-form">
-            <input type="hidden" id="hotelId" name="hotel_id">
-            <input type="text" id="name" name="name" class="input-field" placeholder="Guest name" required>
-            <input type="text" id="phone" name="phone" class="input-field" placeholder="Guest number (380XXXXXXXXX)" required>
-            <div class="button-group">
-                <button type="button" id="submitButton" class="submit-btn">Book</button>
-                <button type="button" id="returnButton" class="return-btn">Return to Hotels</button>
-            </div>
-        </form>
-    </div>
-
+    </main>
     <footer class="site-footer">
-        <p>This is not a real booking site; bbooking is a diploma project website. All materials are licensed under the MIT License. Deployment and development are managed by @rumiantsevaa. For more information, visit <a href="https://github.com/rumiantsevaa/Diploma-Project-Booking-Service" target="_blank">GitHub</a>.</p>
+        <p>
+            This is not a real booking site; bbooking is a diploma project website. All materials are licensed under the
+            MIT
+            License. Deployment and development are managed by @rumiantsevaa. For more information, visit <a
+                href="https://github.com/rumiantsevaa/Diploma-Project-Booking-Service" target="_blank">GitHub</a>.
+        </p>
     </footer>
+</div>
+<div id="templates">
+    <template id="booking-form-template">
+        <dialog id="booking-form-dialog">
+            <form method="dialog">
+                <button type="submit">Закрыть</button>
+            </form>
+            <main>
+                <h2>Booking Form</h2>
+                <p>Hotel: <slot name="hotel-name"></slot></p>
+                <form id="book-form" method="post" action="/book/">
+                    <input type="hidden" id="hotel-id" name="hotel-id">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required autocomplete="name">
+                    <label for="phone">Phone:</label>
+                    <input type="tel" id="phone" name="phone" required autocomplete="tel">
+                    <button type="submit">Book</button>
+                </form>
+            </main>
+        </dialog>
+    </template>
+</div>
 </body>
 </html>

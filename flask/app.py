@@ -1,9 +1,9 @@
-from flask import Flask, render_template, request, jsonify
-import sqlite3
 import re
-import os
-from flask import g
 import secrets
+import sqlite3
+
+from flask import Flask, render_template, request, jsonify
+from flask import g
 
 # Создание или подключение к базе данных <== MERGED FROM INIT_DB.PY  
 db_path = 'hotels.db'
@@ -34,9 +34,9 @@ CREATE TABLE IF NOT EXISTS bookings (
 
 # Список отелей для добавления/обновления
 hotels = [
-    ('Cozy Cottage in the Carpathians', 'Romania, Carpathian Mountains', 50.00, 'Small wooden house among the Carpathian forests', 'carpathian_cottage.jpg'),
-    ('Romantic Cottage', 'Romania, Carpathian Foothills', 65.00, 'Charming house with mountain landscape views', 'romantic_cottage.jpg'),
-    ('Treehouse', 'Norway, Fjords', 120.00, 'Unique hotel among Norwegian pines with panoramic view', 'treehouse.jpg')
+    ('Cozy Cottage in the Carpathians', 'Romania, Carpathian Mountains', 50.00, 'Small wooden house among the Carpathian forests', 'carpathian_cottage.avif'),
+    ('Romantic Cottage', 'Romania, Carpathian Foothills', 65.00, 'Charming house with mountain landscape views', 'romantic_cottage.avif'),
+    ('Treehouse', 'Norway, Fjords', 120.00, 'Unique hotel among Norwegian pines with panoramic view', 'treehouse.avif')
 ]
 
 # Обработка данных
@@ -84,29 +84,24 @@ def add_security_headers(response):
     nonce = getattr(g, 'csp_nonce', '')
     csp = (
         "default-src 'self'; "
-        f"script-src 'self' 'nonce-{nonce}' 'strict-dynamic'; "
+        f"script-src 'self' 'nonce-{nonce}'; "
         f"style-src 'self' 'nonce-{nonce}'; "
         "img-src 'self' data: https://bbooking.pp.ua; "
         "frame-ancestors 'none'; "
         "base-uri 'self'; "
         "form-action 'self'; "
         "require-trusted-types-for 'script'; "
-	"trusted-types bookingPolicy default; "
+    "trusted-types default; "
         "object-src 'none'"
     ).format(nonce=nonce)
     response.headers['Content-Security-Policy'] = csp
     response.headers['Permissions-Policy'] = (
         "accelerometer=(),"
-        "ambient-light-sensor=(),"
         "autoplay=(),"
-        "battery=(),"
         "camera=(),"
         "cross-origin-isolated=(),"
         "display-capture=(),"
-        "document-domain=(),"
         "encrypted-media=(),"
-        "execution-while-not-rendered=(),"
-        "execution-while-out-of-viewport=(),"
         "fullscreen=(self),"
         "geolocation=(),"
         "gyroscope=(),"
@@ -114,7 +109,6 @@ def add_security_headers(response):
         "magnetometer=(),"
         "microphone=(),"
         "midi=(),"
-        "navigation-override=(),"
         "payment=(),"
         "picture-in-picture=(),"
         "publickey-credentials-get=(),"
@@ -126,17 +120,10 @@ def add_security_headers(response):
         "clipboard-read=(),"
         "clipboard-write=(),"
         "gamepad=(),"
-        "speaker-selection=(),"
-        "conversion-measurement=(),"
-        "focus-without-user-activation=(),"
         "hid=(),"
         "idle-detection=(),"
         "interest-cohort=(),"
-        "serial=(),"
-        "sync-script=(),"
-        "trust-token-redemption=(),"
-        "window-placement=(),"
-        "vertical-scroll=()"
+        "serial=()"
     )
     return response
 
@@ -159,10 +146,11 @@ def index():
     return render_template('index.html', hotels=hotels)
 
 
-@app.route('/book/<int:hotel_id>', methods=['POST'])
-def book_hotel(hotel_id):
+@app.route('/book/', methods=['POST'])
+def book_hotel():
     conn = get_db_connection()
-    
+
+    hotel_id = request.form['hotel-id']
     name = request.form['name']
     phone = request.form['phone']
     
@@ -178,20 +166,20 @@ def book_hotel(hotel_id):
 
 @app.route('/cache-me')
 def cache():
-	return "nginx will cache this response"
+    return "nginx will cache this response"
 
 @app.route('/info')
 def info():
 
-	resp = {
-		'connecting_ip': request.headers['X-Real-IP'],
-		'proxy_ip': request.headers['X-Forwarded-For'],
-		'host': request.headers['Host'],
-		'user-agent': request.headers['User-Agent']
-	}
+    resp = {
+        'connecting_ip': request.headers['X-Real-IP'],
+        'proxy_ip': request.headers['X-Forwarded-For'],
+        'host': request.headers['Host'],
+        'user-agent': request.headers['User-Agent']
+    }
 
-	return jsonify(resp)
+    return jsonify(resp)
 
 @app.route('/flask-health-check')
 def flask_health_check():
-	return "success"
+    return "success"
