@@ -107,7 +107,6 @@ def add_security_headers(response):
         "microphone=(),"
         "midi=(),"
         "payment=(),"
-        "picture-in-picture=(),"
         "publickey-credentials-get=(),"
         "screen-wake-lock=(),"
         "sync-xhr=(),"
