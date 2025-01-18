@@ -34,10 +34,14 @@ CREATE TABLE IF NOT EXISTS bookings (
 
 # Список отелей для добавления/обновления
 hotels = [
-    ('Cozy Cottage in the Carpathians', 'Romania, Carpathian Mountains', 50.00, 'Small wooden house among the Carpathian forests', 'carpathian_cottage.avif'),
-    ('Romantic Cottage', 'Romania, Carpathian Foothills', 65.00, 'Charming house with mountain landscape views', 'romantic_cottage.avif'),
-    ('Treehouse', 'Norway, Fjords', 120.00, 'Unique hotel among Norwegian pines with panoramic view', 'treehouse.avif')
+    ('British Elegance Hotel', 'United Kingdom, London', 150.00, 'Luxurious hotel with modern British design in the heart of London', 'british.avif'), 
+    ('Oriental Pearl Hotel', 'China, Shanghai', 180.00, 'Sophisticated hotel blending traditional Chinese style with modern comfort', 'chinese.avif'),
+    ('Modern Cottage Retreat', 'Canada, Rocky Mountains', 90.00, 'Contemporary cottage surrounded by breathtaking mountain scenery', 'modern_cottage.avif'),
+    ('Skyline Skyscraper Hotel', 'Japan, Tokyo', 300.00, 'Magnificent skyscraper offering panoramic city views and world-class amenities', 'skyscraper.avif'), 
+    ('Spanish Villa Resort', 'Spain, Andalusia', 200.00, 'Elegant villa inspired by traditional Spanish architecture, surrounded by olive groves', 'spain.avif'),
+    ('Norwegian Treehouse Retreat', 'Norway, Fjords', 120.00, 'Unique hotel among Norwegian pines with panoramic view', 'treehouse.avif')
 ]
+
 
 # Обработка данных
 for hotel in hotels:
