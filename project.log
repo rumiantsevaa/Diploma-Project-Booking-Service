@@ -687,3 +687,6 @@ Protection via parameterized queries in SQL.
 These improvements enhance security (XSS, SQL injection protection) and optimize site performance (compression, caching, image loading).
 
 Moreover, I've added 3 new hotels to the website and improved the visual design of the website during the development process.
+
+20.01
+Authenticated Origin Pulls added. 
