@@ -6,6 +6,7 @@ services:
     volumes:
       - ./nginx/default.conf:/tmp/default.conf
       - /etc/letsencrypt:/etc/letsencrypt
+      - nginx_logs:/var/log/nginx 
     environment: 
       - FLASK_SERVER_ADDR=flask-app:8000
     ports:
@@ -37,7 +38,45 @@ services:
     command: gunicorn -w 3 -t 60 -b 0.0.0.0:8000 app:app
     networks:
       - backend
-      
+   
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    depends_on:
+      - nginx-proxy
+    volumes:
+      - ./crowdsec/config:/etc/crowdsec
+      - ./crowdsec/data:/var/lib/crowdsec/data
+      - /var/log/auth.log:/var/log/auth.log:ro
+      - crowdsec_db:/var/lib/crowdsec/data/db.sqlite # Для хранения базы данных
+      - crowdsec_config:/etc/crowdsec/local_api_credentials.yaml # Для хранения ключей
+      - nginx_logs:/var/log/nginx:ro 
+    networks:
+      - backend
+    restart: always
+    expose:
+      - "8080"  # Только для внутренней сети
+    command: -listen-address 127.0.0.1:9090  # Слушаем только локальные подключения
+
+  crowdsec-bouncer:
+    image: crowdsecurity/bouncer-nginx:latest
+    container_name: crowdsec-bouncer
+    environment:
+      BOUNCER_KEY_FILE: /etc/crowdsec/local_api_credentials.yaml # Используем файл вместо переменной окружения
+    volumes:
+      - crowdsec_config:/etc/crowdsec/local_api_credentials.yaml:ro # Монтируем файл с ключом только для чтения
+    depends_on:
+      - crowdsec
+      - nginx-proxy
+    networks:
+      - backend
+    restart: always
+
+volumes:
+  nginx_logs:
+  crowdsec_db:
+  crowdsec_config:  
+   
 networks:
   frontend:
     driver: bridge

@@ -357,7 +357,24 @@ jobs:
                 "notes":"Allow GitHub Actions runner"
               }'
 
-          # ZAP 
+        - name: Check CrowdSec credentials
+          uses: appleboy/ssh-action@v0.1.5
+          with:
+              host: ${{ secrets.AWS_SERVER_IP }}
+              username: ${{ secrets.SERVER_USER }}
+              key: ${{ secrets.AWS_SSH_KEY }}
+              script: |
+                cd ~/project
+                if [ ! -f "crowdsec/config/local_api_credentials.yaml" ]; then
+                  echo "CrowdSec credentials not found, will be generated on first run"
+                else
+                  echo "Using existing CrowdSec credentials"
+                fi
+                source: "crowdsec/init.sh"
+                target: "~/project/"
+                chmod +x crowdsec/config/init.sh
+
+
         - name: ZAP Scan with Official Stable Image
           run: |
            # Pull the official stable ZAP image
