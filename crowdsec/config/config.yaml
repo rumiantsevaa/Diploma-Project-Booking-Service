@@ -1,3 +1,13 @@
+api:
+  server:
+    listen_uri: 127.0.0.1:8080
+    profiles_path: /etc/crowdsec/profiles.yaml
+  client:
+    credentials_path: /etc/crowdsec/local_api_credentials.yaml
+
+capi:
+  url: https://api.crowdsec.net/
+  login: ${CROWDSEC_API_KEY}  # API https://app.crowdsec.net
 common:
   daemonize: false
   pid_dir: /var/run/
