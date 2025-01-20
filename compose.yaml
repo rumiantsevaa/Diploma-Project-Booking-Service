@@ -48,8 +48,6 @@ services:
       - ./crowdsec/config:/etc/crowdsec
       - ./crowdsec/data:/var/lib/crowdsec/data
       - /var/log/auth.log:/var/log/auth.log:ro
-      - crowdsec_db:/var/lib/crowdsec/data/db.sqlite # Для хранения базы данных
-      - crowdsec_config:/etc/crowdsec/local_api_credentials.yaml # Для хранения ключей
       - nginx_logs:/var/log/nginx:ro 
     networks:
       - backend
