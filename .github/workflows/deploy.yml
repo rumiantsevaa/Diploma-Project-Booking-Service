@@ -162,25 +162,36 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.AWS_SSH_KEY }}
         script: |
+          # Добавляем docker login
+          echo "Logging into Docker Hub as ${{ secrets.DOCKER_USERNAME }}"
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          
           # Создаем минимальную структуру директорий
           mkdir -p ~/project/nginx
           
-          # Создаем .env файл с версией и передаем ее + DOCKER_HUB_NICKNAME
-          echo "TAG=${{ env.NEW_VERSION }}" > ~/project/.env
-          echo "DOCKER_HUB_NICKNAME=${{ secrets.DOCKER_HUB_NICKNAME }}" >> ~/project/.env
+          # Создаем .env файл с переменными окружения
+          {
+            echo "TAG=${{ env.NEW_VERSION }}"
+            echo "DOCKER_HUB_NICKNAME=${{ secrets.DOCKER_HUB_NICKNAME }}"
+          } > ~/project/.env
           
-          # Переходим в директорию проекта
           cd ~/project
           
-          # Останавливаем контейнеры и чистим неиспользуемые образы
+          echo "Stopping existing containers and cleaning up..."
           docker-compose down --remove-orphans
           docker system prune -f
           
-          # Подтягиваем новые образы из Docker Hub
-          docker pull ${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.NEW_VERSION }}
-          docker pull ${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}
+          echo "Pulling new images..."
+          for image in \
+            "${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.NEW_VERSION }}" \
+            "${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}" \
+            "crowdsecurity/bouncer-nginx:latest"
+          do
+            echo "Pulling image: ${image//${{ secrets.DOCKER_USERNAME }}/***}"
+            docker pull "$image"
+          done
           
-          # Запускаем новые контейнеры
+          echo "Starting new containers..."
           docker-compose up -d --force-recreate
 
           # Define rollback function
