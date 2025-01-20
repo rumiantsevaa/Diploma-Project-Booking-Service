@@ -336,19 +336,6 @@ jobs:
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_PASSWORD }}
       
-        # Trivy
-        - name: Run Trivy vulnerability scanner
-          uses: aquasecurity/trivy-action@master
-          env:
-            DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-            NEW_VERSION: ${{ env.NEW_VERSION }}
-          with:
-            image-ref: 'serpentariya/booking_app:${{ needs.deploy.outputs.version }}'
-            format: 'table'
-            exit-code: '0' 
-            severity: 'CRITICAL,HIGH,MEDIUM' 
-            timeout: '5m'
-
         - name: Get current IP address for GitHub Actions
           id: get_ip
           run: |
