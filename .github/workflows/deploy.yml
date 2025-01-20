@@ -184,8 +184,7 @@ jobs:
           echo "Pulling new images..."
           for image in \
             "${{ secrets.DOCKER_USERNAME }}/booking_nginx:${{ env.NEW_VERSION }}" \
-            "${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}" \
-            "crowdsecurity/bouncer-nginx:latest"
+            "${{ secrets.DOCKER_USERNAME }}/booking_app:${{ env.NEW_VERSION }}"
           do
             echo "Pulling image: ${image//${{ secrets.DOCKER_USERNAME }}/***}"
             docker pull "$image"

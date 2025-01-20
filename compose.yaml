@@ -58,20 +58,6 @@ services:
       - "8080"  # Только для внутренней сети
     command: -listen-address 127.0.0.1:9090  # Слушаем только локальные подключения
 
-  crowdsec-bouncer:
-    image: crowdsecurity/bouncer-nginx:latest
-    container_name: crowdsec-bouncer
-    environment:
-      BOUNCER_KEY_FILE: /etc/crowdsec/local_api_credentials.yaml # Используем файл вместо переменной окружения
-    volumes:
-      - crowdsec_config:/etc/crowdsec/local_api_credentials.yaml:ro # Монтируем файл с ключом только для чтения
-    depends_on:
-      - crowdsec
-      - nginx-proxy
-    networks:
-      - backend
-    restart: always
-
 volumes:
   nginx_logs:
   crowdsec_db:
