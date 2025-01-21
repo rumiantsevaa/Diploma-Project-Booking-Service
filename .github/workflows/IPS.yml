@@ -4,19 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       reason:
-        description: 'Test running workflow'
+        description: 'Monitoring Intrusion Prevention System Efficiency'
         required: false
-        default: 'Manual trigger'
+        default: 'Should be manually triggered'
   
-  push:
-    paths:
-      - '.github/workflows/IPS.yml'
-      - '!version.txt'
-      - '!last_successful_version.txt'
-      - '!project.log'
-
 jobs:
-  security-monitoring:
+  ips-settings-monitoring:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -29,37 +22,22 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
-            echo "Welcome to your Intrusion Prevention System, majesty. This script collects your current configuration and works as a monitoring tool (IDS)."
-            
-            # SSH Module
-            echo "**************************************************************************************************"
-            echo "Security settings /etc/ssh/sshd_config"
-            grep -E 'PermitRootLogin no|LoginGraceTime 60|ClientAliveInterval 15|ClientAliveCountMax 2' /etc/ssh/sshd_config
-            
+
             # Fail2Ban Status
-            echo "**************************************************************************************************"
             echo "Fail2Ban status:"
             systemctl status fail2ban | grep -E 'Active|Loaded|Main PID'
-            
-            # Custom fail2ban policy
             echo "**************************************************************************************************"
-            echo "Current custom fail2ban sshd-custom policy:"
-            cat /etc/fail2ban/filter.d/sshd-custom.conf
-            
-            # Banned IPs
+
+            # Fail2Ban Status for sshd-custom jail
+            echo "Current Fail2Ban status for sshd-custom:"
+            sudo fail2ban-client status sshd-custom
             echo "**************************************************************************************************"
-            echo "Banned IPs in fail2ban (only today):"
-            grep "$(date '+%Y-%m-%d')" /var/log/fail2ban.log | grep 'Ban'
+
+            # Fail2Ban Status for nginx-direct-ip jail
+            echo "Current Fail2Ban status for nginx-direct-ip:"
+            sudo fail2ban-client status nginx-direct-ip            
             
-            # SSH logs
-            echo "**************************************************************************************************"
-            echo "SSH logs (only today):"
-            grep "$(date '+%Y-%m-%d')" /var/log/auth.log | grep -E "$(date '+%Y-%m-%d')T"
-            
-            # Fail2ban recent actions
-            echo "**************************************************************************************************"
-            echo "Actions from fail2ban.log (last 10 lines):"
-            tail -n 10 /var/log/fail2ban.log
+
 
       - name: Check Cloudflare Security Level
         run: |
@@ -73,64 +51,3 @@ jobs:
           echo "Security Level: $SECURITY_LEVEL"
           echo "Modified: $MODIFIED_DATE"
 
-      - name: Get Filtered Nginx Logs
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.AWS_SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.AWS_SSH_KEY }}
-          script: |
-            # Получаем текущий IP GitHub Actions runner
-            CURRENT_IP=$(curl -s https://api.ipify.org)
-            echo "Current runner IP: $CURRENT_IP"
-            
-            # Получаем список IP из Cloudflare
-            WHITELIST=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/firewall/access_rules/rules" \
-              -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_KEY }}" \
-              -H "Content-Type: application/json" | \
-              jq -r '.result[] | select(.mode=="whitelist") | .configuration.value' | \
-              sort -u | \
-              tr '\n' '|' | \
-              sed 's/|$//')
-            
-            # Создаем временный файл для логов
-            TEMP_LOG_FILE=$(mktemp)
-            
-            # Получаем все логи из контейнера
-            docker logs project-nginx-proxy-1 > "$TEMP_LOG_FILE" 2>&1
-            
-            # Формируем список IP для исключения
-            EXCLUDE_IPS=("127.0.0.1" "$CURRENT_IP")
-            if [ ! -z "$WHITELIST" ]; then
-              IFS='|' read -ra WHITELIST_IPS <<< "$WHITELIST"
-              EXCLUDE_IPS+=("${WHITELIST_IPS[@]}")
-            fi
-            
-            echo "Excluding IPs:"
-            printf '%s\n' "${EXCLUDE_IPS[@]}"
-            
-            echo "Filtered Nginx Logs:"
-            
-            # Добавим отладочную информацию
-            echo "Debug: Total lines in log before filtering: $(wc -l < "$TEMP_LOG_FILE")"
-            
-            # Фильтруем логи nginx с более точной проверкой
-            while IFS= read -r line; do
-              if [[ -n "$line" ]]; then  # Проверяем, что строка не пустая
-                SKIP=0
-                for ip in "${EXCLUDE_IPS[@]}"; do
-                  # Извлекаем IP адрес из строки лога
-                  LOG_IP=$(echo "$line" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' | head -1)
-                  if [[ "$LOG_IP" == "$ip" ]]; then
-                    SKIP=1
-                    break
-                  fi
-                done
-                if [ $SKIP -eq 0 ]; then
-                  echo "$line"
-                fi
-              fi
-            done < "$TEMP_LOG_FILE"
-            
-            # Очищаем временный файл
-            rm -f "$TEMP_LOG_FILE"
