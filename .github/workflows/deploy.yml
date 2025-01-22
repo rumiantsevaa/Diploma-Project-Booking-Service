@@ -248,13 +248,18 @@ jobs:
 
     - name: Update last successful version
       if: success() && steps.deploy_step.outcome == 'success'
-      run: |
-            echo "${{ env.NEW_VERSION }}" > last_successful_version.txt
-            git config --local user.email "github-actions[bot]@users.noreply.github.com"
-            git config --local user.name "github-actions[bot]"
-            git add last_successful_version.txt
-            git commit -m "Update last successful version to ${{ env.NEW_VERSION }}"
-            git push        
+      run: |    
+            # Проверяем существование тега - если есть, значит это реран
+            if git ls-remote --tags origin refs/tags/${{ env.NEW_VERSION }} | grep -q refs/tags/${{ env.NEW_VERSION }}; then
+              echo "This is a re-run. Skipping update of last_successful_version.txt"
+            else
+              echo "${{ env.NEW_VERSION }}" > last_successful_version.txt
+              git config --local user.email "github-actions[bot]@users.noreply.github.com"
+              git config --local user.name "github-actions[bot]"
+              git add last_successful_version.txt
+              git commit -m "Update last successful version to ${{ env.NEW_VERSION }}"
+              git push
+            fi
 
     - name: SSL Certificate Management
       uses: appleboy/ssh-action@v0.1.5
