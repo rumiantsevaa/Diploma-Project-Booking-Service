@@ -36,7 +36,7 @@ jobs:
 
     - name: Generate new Docker tag
       env:
-        VER_TYPE: 1  # Default value for patch version increment is 1 (PATCH) 
+        VER_TYPE: 2  # Default value for patch version increment is 1 (PATCH) 
       run: |
         CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
         MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1 | tr -d 'v')
