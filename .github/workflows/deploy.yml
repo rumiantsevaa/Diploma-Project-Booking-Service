@@ -90,6 +90,8 @@ jobs:
           # Проверяем существование тега
           if git ls-remote --tags origin refs/tags/${{ env.NEW_VERSION }} | grep -q refs/tags/${{ env.NEW_VERSION }}; then
             echo "ALERT! This is a re-run. Skipping version update in version.txt"
+            # Создаем флаг реран
+            touch rerun_flag
           else
           # Если тега нет - обновляем версию как обычно
             echo "${{ env.NEW_VERSION }}" > version.txt
@@ -250,7 +252,7 @@ jobs:
       if: success() && steps.deploy_step.outcome == 'success'
       run: |    
             # Проверяем существование тега - если есть, значит это реран
-            if git ls-remote --tags origin refs/tags/${{ env.NEW_VERSION }} | grep -q refs/tags/${{ env.NEW_VERSION }}; then
+            if [[ -f "rerun_flag" ]]; then
               echo "This is a re-run. Skipping update of last_successful_version.txt"
             else
               echo "${{ env.NEW_VERSION }}" > last_successful_version.txt
