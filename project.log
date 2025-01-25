@@ -690,3 +690,16 @@ Moreover, I've added 3 new hotels to the website and improved the visual design 
 
 20.01
 Authenticated Origin Pulls added. 
+
+21-25.01
+Intrusion Prevention System (IPS) Enhancement:
+Replaced CrowdSec with a custom IPS to handle large-scale bot attacks(to replace CrowdSec due to its 30 requests/day limitation being insufficient for handling large-scale bot attacks).
+Configured custom fail2ban jails for SSH (sshd-custom) and web app (nginx-direct-ip) attacks.
+Improved detection, response, and ban rules for malicious patterns.
+Deployment Optimizations:
+Streamlined deployment processes and IPS integration in CI/CD.
+Optimized system resource utilization.
+Monitoring Updates:
+Upgraded Netdata for better performance and compatibility.
+Maintained monitoring configurations and dashboards.
+Impact: Improved security, performance, and monitoring efficiency.
