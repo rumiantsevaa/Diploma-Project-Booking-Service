@@ -17,12 +17,16 @@ sudo mkdir -p /usr/lib/netdata/python.d
 sudo bash -c 'cat > /usr/lib/netdata/python.d/alert_notify.py << EOF
 #!/opt/netdata_venv/bin/python3
 import yagmail
+import os
 
 def send_alert(subject, message):
     try:
-        yag = yagmail.SMTP("${ALERT_NETDATA_EMAIL}", "${ALERT_NETDATA_PASS}")
+        email = os.environ.get("ALERT_NETDATA_EMAIL")
+        password = os.environ.get("ALERT_NETDATA_PASS")
+
+        yag = yagmail.SMTP(email, password)
         yag.send(
-            to="${ALERT_NETDATA_EMAIL}",
+            to=email,
             subject=subject,
             contents=message
         )
