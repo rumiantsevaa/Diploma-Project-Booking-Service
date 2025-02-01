@@ -1,14 +1,21 @@
 #!/bin/bash
 
-# Установка python и pip если не установлены
+# Install required packages
 sudo apt-get update
-sudo apt-get install -y python3 python3-pip
+sudo apt-get install -y python3-venv python3-full
 
-# Установка yagmail
-pip3 install yagmail
+# Create virtual environment
+sudo python3 -m venv /opt/netdata_venv
 
-# Создаем скрипт для отправки уведомлений
-cat > /usr/lib/netdata/python.d/alert_notify.py << EOF
+# Install yagmail in virtual environment
+sudo /opt/netdata_venv/bin/pip install yagmail
+
+# Create directory if it doesn't exist
+sudo mkdir -p /usr/lib/netdata/python.d
+
+# Create alert notification script
+sudo bash -c 'cat > /usr/lib/netdata/python.d/alert_notify.py << EOF
+#!/opt/netdata_venv/bin/python3
 import yagmail
 
 def send_alert(subject, message):
@@ -28,13 +35,13 @@ if __name__ == "__main__":
     import sys
     if len(sys.argv) > 2:
         send_alert(sys.argv[1], sys.argv[2])
-EOF
+EOF'
 
-# Делаем скрипт исполняемым
-chmod +x /usr/lib/netdata/python.d/alert_notify.py
+# Make script executable
+sudo chmod +x /usr/lib/netdata/python.d/alert_notify.py
 
-# Настраиваем конфигурацию алертов
-cat > /etc/netdata/health.d/ram.conf << EOF
+# Configure RAM alerts
+sudo bash -c 'cat > /etc/netdata/health.d/ram.conf << EOF
 alarm: ram_usage_80
     on: system.ram
     lookup: average -1m percentage of used
@@ -43,10 +50,11 @@ alarm: ram_usage_80
     warn: \$this > 80
     crit: \$this > 90
     info: RAM usage is above 80%
-    exec: /usr/bin/python3 /usr/lib/netdata/python.d/alert_notify.py "High RAM Usage Alert" "RAM usage is at \$this%"
-EOF
+    exec: /opt/netdata_venv/bin/python3 /usr/lib/netdata/python.d/alert_notify.py "High RAM Usage Alert" "RAM usage is at \$this%"
+EOF'
 
-cat > /etc/netdata/health.d/cpu.conf << EOF
+# Configure CPU alerts
+sudo bash -c 'cat > /etc/netdata/health.d/cpu.conf << EOF
 alarm: cpu_usage_80
     on: system.cpu
     lookup: average -1m percentage of user
@@ -55,10 +63,11 @@ alarm: cpu_usage_80
     warn: \$this > 80
     crit: \$this > 90
     info: CPU usage is above 80%
-    exec: /usr/bin/python3 /usr/lib/netdata/python.d/alert_notify.py "High CPU Usage Alert" "CPU usage is at \$this%"
-EOF
+    exec: /opt/netdata_venv/bin/python3 /usr/lib/netdata/python.d/alert_notify.py "High CPU Usage Alert" "CPU usage is at \$this%"
+EOF'
 
-cat > /etc/netdata/health.d/docker.conf << EOF
+# Configure Docker alerts
+sudo bash -c 'cat > /etc/netdata/health.d/docker.conf << EOF
 alarm: docker_container_unhealthy
     on: docker.container_health
     lookup: min -1m unaligned of health
@@ -67,5 +76,12 @@ alarm: docker_container_unhealthy
     warn: \$this != 1
     crit: \$this == 0
     info: Docker container is not healthy
-    exec: /usr/bin/python3 /usr/lib/netdata/python.d/alert_notify.py "Docker Container Alert" "Container health status is \$this"
-EOF
+    exec: /opt/netdata_venv/bin/python3 /usr/lib/netdata/python.d/alert_notify.py "Docker Container Alert" "Container health status is \$this"
+EOF'
+
+# Set proper permissions
+sudo chown -R netdata:netdata /usr/lib/netdata/python.d/alert_notify.py
+sudo chown -R netdata:netdata /opt/netdata_venv
+
+# Restart Netdata to apply changes
+sudo systemctl restart netdata
