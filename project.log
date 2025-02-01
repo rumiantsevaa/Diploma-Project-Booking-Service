@@ -701,5 +701,18 @@ Streamlined deployment processes and IPS integration in CI/CD.
 Optimized system resource utilization.
 Monitoring Updates:
 Upgraded Netdata for better performance and compatibility.
-Maintained monitoring configurations and dashboards.
-Impact: Improved security, performance, and monitoring efficiency.
+
+01.02
+--- NETDATA ALERTS IMPLEMENTATION ---
+Implemented comprehensive alert system in Netdata monitoring solution for CPU, RAM and Docker. 
+* Configured email notifications
+Testing & Validation:
+* Conducted stress tests using:
+  ```bash
+  stress --cpu 8 --timeout 120s
+* Maintained monitoring configurations and dashboards.
+
+Successfully verified alert triggers:
+- CPU usage alerts activated during stress test
+- Email notifications delivered properly
+- Alert thresholds functioning as configured
