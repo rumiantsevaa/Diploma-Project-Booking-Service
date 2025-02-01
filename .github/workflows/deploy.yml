@@ -386,13 +386,16 @@ jobs:
             target: "~/project/netdata/"
             strip_components: 1
   
-        - name: Setup Netdata
+        - name: Setup Netdata and Alerts
           uses: appleboy/ssh-action@v0.1.5
           with:
             host: ${{ secrets.AWS_SERVER_IP }}
             username: ${{ secrets.SERVER_USER }}
             key: ${{ secrets.AWS_SSH_KEY }}
+            envs: ALERT_NETDATA_EMAIL,ALERT_NETDATA_PASS
             script: |
               cd ~/project
+              export ALERT_NETDATA_EMAIL="${{ secrets.ALERT_NETDATA_EMAIL }}"
+              export ALERT_NETDATA_PASS="${{ secrets.ALERT_NETDATA_PASS }}"
               chmod +x netdata/setup_netdata.sh
               ./netdata/setup_netdata.sh
