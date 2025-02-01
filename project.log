@@ -716,3 +716,43 @@ Successfully verified alert triggers:
 - CPU usage alerts activated during stress test
 - Email notifications delivered properly
 - Alert thresholds functioning as configured
+
+UPD: 
+! RAM Usage Alerts:
+Warning: >80%
+Critical: >90%
+Check every minute
+! CPU Usage Alerts:
+Warning: >80%
+Critical: >90%
+Check every minute
+! Docker Container Health Alerts:
+Monitor container health
+Warning when unhealthy
+Check every minute
+! Disk Space Alerts:
+Warning: >80%
+Critical: >90%
+! Monitor disk space usage
+System Load Alerts:
+Warning: >2 (15 minute load average)
+Critical: >4
+Check every minute
+! Network Alerts:
+Warning: >10 errors
+Critical: >50 errors
+Monitor network errors
+! Swap Usage Alerts:
+Warning: >80%
+Critical: >90%
+Monitor swap usage
+! IOWait Alerts:
+Warning: >20%
+Critical: >40%
+I/O Wait Time Monitoring
+
+!!! All alerts:
+- Configured to send email notifications
+- Checked every minute
+- Have clear thresholds
+- Integrated with alert system via Python script
