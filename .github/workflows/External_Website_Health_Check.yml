@@ -9,6 +9,21 @@ jobs:
   health-check:
     runs-on: ubuntu-latest
     steps:
+
+      - name: Add IP to Cloudflare Whitelist
+        run: |
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/firewall/access_rules/rules" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            --data '{
+              "mode": "whitelist",
+              "configuration": {
+                "target": "ip",
+                "value": "GITHUB_RUNNER_IP"
+              },
+              "notes": "GitHub Actions Health Check"
+            }'
+            
       - name: Check Website Health
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" https://bbooking.pp.ua/health-check)
