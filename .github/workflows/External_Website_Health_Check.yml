@@ -36,14 +36,7 @@ jobs:
           sleep 30
           
           # Modified health check with additional headers
-          response=$(curl -s -L \
-            -H "User-Agent: Mozilla/5.0" \
-            -H "Accept: */*" \
-            -H "CF-Connecting-IP: $IP" \
-            -H "X-Forwarded-For: $IP" \
-            --cookie "cf_clearance=1" \
-            https://bbooking.pp.ua/health-check)
-          
+          response=$(curl https://bbooking.pp.ua/health-check)
           if [ "$response" != "success" ]; then
             echo "Website health check failed! Response: $response"
             exit 1
