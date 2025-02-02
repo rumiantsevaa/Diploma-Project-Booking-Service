@@ -12,6 +12,20 @@ jobs:
   monitor:
     runs-on: ubuntu-latest
     steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up environment variables
+        env:
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          echo "CLOUDFLARE_API_KEY=${{ secrets.CLOUDFLARE_API_KEY }}" >> $GITHUB_ENV
+          echo "CLOUDFLARE_EMAIL=${{ secrets.CLOUDFLARE_EMAIL }}" >> $GITHUB_ENV
+          echo "CLOUDFLARE_ZONE_ID=${{ secrets.CLOUDFLARE_ZONE_ID }}" >> $GITHUB_ENV
+    
       - name: Get current IP address for GitHub Actions
         id: get_ip
         run: |
@@ -34,21 +48,19 @@ jobs:
               "notes":"Allow GitHub Actions runner"
             }'
 
-      - name: Configure Cloudflare
-        env:
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+      - name: Check Bot Fight Mode Status
         run: |
-          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/bot_management" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_KEY }}" \
+          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/bot_management" \
+            -H "X-Auth-Email: $CLOUDFLARE_EMAIL" \
+            -H "X-Auth-Key: $CLOUDFLARE_API_KEY" \
             -H "Content-Type: application/json")
-          
-          BOT_FIGHT_MODE_STATUS=$(echo $RESPONSE | jq -r '.result.fight_mode')
-          
-          if [ "$BOT_FIGHT_MODE_STATUS" = "true" ]; then
-            echo "Bot Fight Mode is enabled."
+      
+          FIGHT_MODE_STATUS=$(echo $RESPONSE | jq -r '.result.fight_mode')
+      
+          if [ "$FIGHT_MODE_STATUS" = "true" ]; then
+            echo "Bot Fight Mode is currently enabled."
           else
-            echo "Bot Fight Mode is disabled."
+            echo "Bot Fight Mode is currently disabled."
           fi
 
 
