@@ -10,20 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: Add IP to Cloudflare Whitelist
+      - name: Get current IP address for GitHub Actions
+        id: get_ip
         run: |
-          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/firewall/access_rules/rules" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_KEY }}" \
+          IP=$(curl -s https://api.ipify.org)
+          echo "Current IP: $IP"
+          echo "IP=$IP" >> $GITHUB_ENV
+
+      - name: Add IP for GitHub Actions to Cloudflare whitelist
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+        run: |
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/firewall/access_rules/rules" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_KEY" \
             -H "Content-Type: application/json" \
             --data '{
-              "mode": "whitelist",
-              "configuration": {
-                "target": "ip",
-                "value": "GITHUB_RUNNER_IP"
-              },
-              "notes": "GitHub Actions Health Check"
+              "mode":"whitelist",
+              "configuration":{"target":"ip","value":"'"$IP"'"},
+              "notes":"Allow GitHub Actions runner"
             }'
-            
+
       - name: Check Website Health
         run: |
           response=$(curl -s -o /dev/null -w "%{http_code}" https://bbooking.pp.ua/health-check)
