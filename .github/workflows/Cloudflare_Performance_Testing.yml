@@ -39,18 +39,18 @@ jobs:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
         run: |
-          # Сохраняем текущее состояние Bot Fight Mode
-          CURRENT_BOT_FIGHT_MODE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/settings/bots" \
-            -H "Authorization: Bearer $CLOUDFLARE_API_KEY" \
-            -H "Content-Type: application/json" | jq -r '.result.value')
+          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/bot_management" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_KEY }}" \
+            -H "Content-Type: application/json")
           
-          echo "CURRENT_BOT_FIGHT_MODE=$CURRENT_BOT_FIGHT_MODE" >> $GITHUB_ENV
+          BOT_FIGHT_MODE_STATUS=$(echo $RESPONSE | jq -r '.result.fight_mode')
           
-          # Отключаем Bot Fight Mode
-          curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/settings/bots" \
-            -H "Authorization: Bearer $CLOUDFLARE_API_KEY" \
-            -H "Content-Type: application/json" \
-            --data '{"value":"off"}'
+          if [ "$BOT_FIGHT_MODE_STATUS" = "true" ]; then
+            echo "Bot Fight Mode is enabled."
+          else
+            echo "Bot Fight Mode is disabled."
+          fi
+
 
       - name: Run Cloudflare Speed Test
         env:
