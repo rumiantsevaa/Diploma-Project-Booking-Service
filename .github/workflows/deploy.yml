@@ -10,6 +10,8 @@ on:
       - 'netdata/dashboards/**'  # Игнорировать изменения в dashboards/
       - 'last_successful_version.txt'  # Игнорировать изменения в last_successful_version.txt
       - '.github/workflows/IPS.yml'  # Игнорировать изменения в IPS.yml
+      - '.github/workflows/External_Website_Health_Check.yml'  # Игнорировать изменения в External_Website_Health_Check.yml
+      - '.github/workflows/Cloudflare_Performance_Testing.yml'  # Игнорировать изменения в Cloudflare_Performance_Testing.yml
      
 jobs:
   deploy:

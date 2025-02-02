@@ -1,0 +1,19 @@
+name: Website Health Check
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Website Health
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://bbooking.pp.ua/health-check)
+          if [ "$response" != "200" ]; then
+            echo "Website health check failed! Status code: $response"
+            exit 1
+          fi
+          echo "Website health check passed"

@@ -1,0 +1,57 @@
+name: Cloudflare Performance Testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Cloudflare Performance Testing with required bypassing steps'
+        required: false
+        default: 'Should be manually triggered'
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure Cloudflare
+        run: |
+          # Сохраняем текущее состояние Bot Fight Mode
+          CURRENT_BOT_FIGHT_MODE=$(curl -s -X GET "https://dash.cloudflare.com/${{ secrets.CLOUDFLARE_ZONE_ID }}/bbooking.pp.ua/security/bots" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" | jq -r '.result.value')
+          
+          echo "CURRENT_BOT_FIGHT_MODE=$CURRENT_BOT_FIGHT_MODE" >> $GITHUB_ENV
+
+      - name: Run Cloudflare Speed Test
+        run: |
+          # Запускаем тест производительности
+          TEST_RESPONSE=$(curl -X POST "https://dash.cloudflare.com/${{ secrets.CLOUDFLARE_ZONE_ID }}/bbooking.pp.ua/speed/test" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"url": "https://bbooking.pp.ua/", "region": "Iowa, USA", "frequency": "once"}')
+          
+          TEST_ID=$(echo $TEST_RESPONSE | jq -r '.result.test_id')
+          echo "TEST_ID=$TEST_ID" >> $GITHUB_ENV
+          
+          # Ждем завершения теста
+          while true; do
+            STATUS=$(curl -s -X GET "https://dash.cloudflare.com/${{ secrets.CLOUDFLARE_ZONE_ID }}/bbooking.pp.ua/speed/test/$TEST_ID" \
+              -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+              | jq -r '.result.status')
+            
+            if [ "$STATUS" = "completed" ]; then
+              break
+            elif [ "$STATUS" = "failed" ]; then
+              echo "Speed test failed"
+              exit 1
+            fi
+            sleep 30
+          done
+
+      - name: Restore Bot Fight Mode
+        if: always()
+        run: |
+          # Восстанавливаем Bot Fight Mode
+          curl -s -X PATCH "https://dash.cloudflare.com/${{ secrets.CLOUDFLARE_ZONE_ID }}/bbooking.pp.ua/security/bots" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"value":"'"${{ env.CURRENT_BOT_FIGHT_MODE }}"'"}'
