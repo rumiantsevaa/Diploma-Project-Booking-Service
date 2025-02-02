@@ -22,6 +22,7 @@ jobs:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
         run: |
+          # Add IP to whitelist (existing code)
           curl -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/firewall/access_rules/rules" \
             -H "Authorization: Bearer $CLOUDFLARE_API_KEY" \
             -H "Content-Type: application/json" \
@@ -30,12 +31,20 @@ jobs:
               "configuration":{"target":"ip","value":"'"$IP"'"},
               "notes":"Allow GitHub Actions runner"
             }'
+          
+          # Wait for Cloudflare to propagate the whitelist
+          sleep 30
+          
+          # Modified health check with additional headers
           response=$(curl -s -L \
             -H "User-Agent: Mozilla/5.0" \
             -H "Accept: */*" \
+            -H "CF-Connecting-IP: $IP" \
+            -H "X-Forwarded-For: $IP" \
+            --cookie "cf_clearance=1" \
             https://bbooking.pp.ua/health-check)
-          status=$?
-          if [ $status -ne 0 ] || [ "$response" != "success" ]; then
+          
+          if [ "$response" != "success" ]; then
             echo "Website health check failed! Response: $response"
             exit 1
           fi
