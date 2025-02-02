@@ -35,28 +35,31 @@ jobs:
             }'
 
       - name: Configure Cloudflare
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
         run: |
           # Сохраняем текущее состояние Bot Fight Mode
-          CURRENT_BOT_FIGHT_MODE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/settings/bots" \
-            -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
-            -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
+          CURRENT_BOT_FIGHT_MODE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/settings/bots" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_KEY" \
             -H "Content-Type: application/json" | jq -r '.result.value')
           
           echo "CURRENT_BOT_FIGHT_MODE=$CURRENT_BOT_FIGHT_MODE" >> $GITHUB_ENV
           
           # Отключаем Bot Fight Mode
-          curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/settings/bots" \
-            -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
-            -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
+          curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/settings/bots" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_KEY" \
             -H "Content-Type: application/json" \
             --data '{"value":"off"}'
 
       - name: Run Cloudflare Speed Test
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
         run: |
           # Запускаем тест производительности
-          TEST_RESPONSE=$(curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/speed_tests" \
-            -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
-            -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
+          TEST_RESPONSE=$(curl -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/speed_tests" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_KEY" \
             -H "Content-Type: application/json" \
             --data '{
               "target": "https://bbooking.pp.ua/",
@@ -65,29 +68,15 @@ jobs:
           
           TEST_ID=$(echo $TEST_RESPONSE | jq -r '.result.id')
           echo "TEST_ID=$TEST_ID" >> $GITHUB_ENV
-          
-          # Ждем завершения теста
-          while true; do
-            STATUS=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/speed_tests/$TEST_ID" \
-              -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
-              -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
-              | jq -r '.result.status')
-            
-            if [ "$STATUS" = "completed" ]; then
-              break
-            elif [ "$STATUS" = "failed" ]; then
-              echo "Speed test failed"
-              exit 1
-            fi
-            sleep 30
-          done
 
       - name: Restore Bot Fight Mode
         if: always()
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
         run: |
           # Восстанавливаем исходное состояние Bot Fight Mode
-          curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/settings/bots" \
-            -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
-            -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
+          curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/settings/bots" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_KEY" \
             -H "Content-Type: application/json" \
             --data '{"value":"'"${{ env.CURRENT_BOT_FIGHT_MODE }}"'"}'
