@@ -17,7 +17,7 @@ jobs:
           echo "Current IP: $IP"
           echo "IP=$IP" >> $GITHUB_ENV
 
-      - name: Add IP for GitHub Actions to Cloudflare whitelist
+      - name: Add IP for GitHub Actions to Cloudflare whitelist and Check Website Health
         env:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
@@ -30,9 +30,6 @@ jobs:
               "configuration":{"target":"ip","value":"'"$IP"'"},
               "notes":"Allow GitHub Actions runner"
             }'
-
-      - name: Check Website Health
-        run: |
           response=$(curl -s -L \
             -H "User-Agent: Mozilla/5.0" \
             -H "Accept: */*" \
