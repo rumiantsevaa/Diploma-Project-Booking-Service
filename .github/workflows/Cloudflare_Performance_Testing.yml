@@ -19,33 +19,32 @@ jobs:
           echo "Current IP: $IP"
           echo "IP=$IP" >> $GITHUB_ENV
 
-      - name: Add IP for GitHub Actions to Cloudflare whitelist and Check Website Health
-        env:
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+      - name: Add IP for GitHub Actions to Cloudflare whitelist
         run: |
-          # Add IP to whitelist (existing code)
-          curl -X POST "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/firewall/access_rules/rules" \
-            -H "Authorization: Bearer $CLOUDFLARE_API_KEY" \
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/firewall/access_rules/rules" \
+            -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
+            -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
             -H "Content-Type: application/json" \
             --data '{
               "mode":"whitelist",
               "configuration":{"target":"ip","value":"'"$IP"'"},
               "notes":"Allow GitHub Actions runner"
             }'
-            
+
       - name: Configure Cloudflare
         run: |
           # Сохраняем текущее состояние Bot Fight Mode
           CURRENT_BOT_FIGHT_MODE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/settings/bots" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
+            -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
             -H "Content-Type: application/json" | jq -r '.result.value')
           
           echo "CURRENT_BOT_FIGHT_MODE=$CURRENT_BOT_FIGHT_MODE" >> $GITHUB_ENV
           
           # Отключаем Bot Fight Mode
           curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/settings/bots" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
+            -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
             -H "Content-Type: application/json" \
             --data '{"value":"off"}'
 
@@ -53,7 +52,8 @@ jobs:
         run: |
           # Запускаем тест производительности
           TEST_RESPONSE=$(curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/speed_tests" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
+            -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
             -H "Content-Type: application/json" \
             --data '{
               "target": "https://bbooking.pp.ua/",
@@ -66,7 +66,8 @@ jobs:
           # Ждем завершения теста
           while true; do
             STATUS=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/speed_tests/$TEST_ID" \
-              -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+              -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
+              -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
               | jq -r '.result.status')
             
             if [ "$STATUS" = "completed" ]; then
@@ -83,6 +84,7 @@ jobs:
         run: |
           # Восстанавливаем исходное состояние Bot Fight Mode
           curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/settings/bots" \
-            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "X-Auth-Email: ${{ secrets.CLOUDFLARE_EMAIL }}" \
+            -H "X-Auth-Key: ${{ secrets.CLOUDFLARE_API_KEY }}" \
             -H "Content-Type: application/json" \
             --data '{"value":"'"${{ env.CURRENT_BOT_FIGHT_MODE }}"'"}'
