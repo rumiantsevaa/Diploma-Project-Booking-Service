@@ -756,3 +756,16 @@ I/O Wait Time Monitoring
 - Checked every minute
 - Have clear thresholds
 - Integrated with alert system via Python script
+
+02.02
+Added External_Website_Health_Check.yml - automatic external website availability monitoring system:
+Main features:
+* Runs every 10 minutes via GitHub Actions (delays are possible due to GitHub queue for scheduled runs)  
+* Checks website availability via endpoint /health-check
+* Automatically adds GitHub Actions IP to Cloudflare whitelist
+* If the website is unavailable, marks the check as failed
+Advantages:
+* External independent monitoring
+* Quick detection of availability issues
+* Free (uses GitHub Actions)
+* Check history is available in GitHub logs
