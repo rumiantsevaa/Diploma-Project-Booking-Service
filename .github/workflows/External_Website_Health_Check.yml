@@ -33,9 +33,13 @@ jobs:
 
       - name: Check Website Health
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://bbooking.pp.ua/health-check)
-          if [ "$response" != "200" ]; then
-            echo "Website health check failed! Status code: $response"
+          response=$(curl -s -L \
+            -H "User-Agent: Mozilla/5.0" \
+            -H "Accept: */*" \
+            https://bbooking.pp.ua/health-check)
+          status=$?
+          if [ $status -ne 0 ] || [ "$response" != "success" ]; then
+            echo "Website health check failed! Response: $response"
             exit 1
           fi
           echo "Website health check passed"
