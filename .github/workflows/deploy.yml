@@ -376,8 +376,7 @@ jobs:
               -t https://bbooking.pp.ua/ \
               -I \
               -j \
-              --auto \
-              -z "-config globalexcludeurl.url_list.url\(0\).regex=https://bbooking\.pp\.ua/cdn-cgi.*"
+              --auto 
             
         - name: Copy /netdata files
           uses: appleboy/scp-action@master
