@@ -157,6 +157,41 @@ jobs:
             echo "Docker Compose is already installed"
           fi
 
+    - name: Setup nginx logs
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.AWS_SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.AWS_SSH_KEY }}
+        script: |
+          # Создаем скрипт merge_logs.sh
+          cat << 'EOF' > ~/project/merge_logs.sh
+          #!/bin/bash
+          
+          # Создаем директорию если её нет
+          mkdir -p /var/log/nginx
+          
+          # Сохраняем текущие логи
+          if [ -f /var/log/nginx/access.log ]; then
+              cp /var/log/nginx/access.log /var/log/nginx/access.log.backup
+          fi
+          
+          # Настраиваем права
+          chown -R nginx:nginx /var/log/nginx
+          chmod 644 /var/log/nginx/*.log
+          
+          # Восстанавливаем логи
+          if [ -f /var/log/nginx/access.log.backup ]; then
+              cat /var/log/nginx/access.log.backup > /var/log/nginx/access.log
+          fi
+          EOF
+          
+          # Делаем скрипт исполняемым
+          chmod +x ~/project/merge_logs.sh
+          
+          # Запускаем скрипт
+          sudo ./project/merge_logs.sh
+
     - name: Deploy to AWS
       id: deploy_step
       continue-on-error: true  # Allow continuing even if deployment fails

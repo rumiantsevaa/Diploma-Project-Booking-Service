@@ -6,6 +6,7 @@ services:
     volumes:
       - ./nginx/default.conf:/tmp/default.conf
       - /etc/letsencrypt:/etc/letsencrypt
+      - nginx_logs:/var/log/nginx
     environment: 
       - FLASK_SERVER_ADDR=flask-app:8000
     ports:
@@ -44,3 +45,7 @@ networks:
   backend:
     driver: bridge
     internal: true
+
+volumes:
+  nginx_logs:
+    driver: local
