@@ -769,3 +769,13 @@ Advantages:
 * Quick detection of availability issues
 * Free (uses GitHub Actions)
 * Check history is available in GitHub logs
+
+09.02
+Nginx logs are now not redirected by system service and are mounted as volume with standart path /var/log/nginx/access.log (same as used to be, but method of treansfer is more convenient now). 
+
+Initially, log redirection was a faster solution in the conditions of urgent installation of Fail2Ban, for which logs should be stored on the server itself, and not in the container. 
+But, due to specific requests of the attacking botnet, namely binary requests, the server could not copy them correctly, which caused a pause in the distribution of bans.
+
+Now everything works properly. 
+
+Happy ban, botnet!
