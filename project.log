@@ -779,3 +779,6 @@ But, due to specific requests of the attacking botnet, namely binary requests, t
 Now everything works properly. 
 
 Happy ban, botnet!
+
+10.02
+The Nginx log cache was overflowed, causing logging issues. I cleared the cache and set up an automatic rotation via a scheduled script to ensure it is cleaned daily at 3 AM. 
