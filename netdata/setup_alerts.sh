@@ -171,7 +171,7 @@ fail2ban: yes
 EOF'
 
 # Copy Fail2Ban configuration
-sudo cp /netdata/fail2ban.conf /etc/netdata/python.d/fail2ban.conf
+sudo cp ./fail2ban.conf /etc/netdata/python.d/fail2ban.conf
 
 # Set permissions for Fail2Ban log
 sudo usermod -a -G adm netdata
