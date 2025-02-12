@@ -152,5 +152,31 @@ EOF'
 sudo chown -R netdata:netdata /usr/lib/netdata/python.d/alert_notify.py
 sudo chown -R netdata:netdata /opt/netdata_venv
 
+# Fail2Ban alerts
+sudo bash -c 'cat > /etc/netdata/health.d/fail2ban.conf << EOF
+alarm: fail2ban_bans
+    on: fail2ban.banned_ip
+    lookup: sum -10m unaligned absolute
+    units: bans
+    every: 1m
+    warn: \$this > 10
+    crit: \$this > 30
+    info: Number of IP bans in the last 10 minutes
+    exec: /opt/netdata_venv/bin/python3 /usr/lib/netdata/python.d/alert_notify.py "High Ban Rate Alert" "Fail2Ban detected \$this bans in last 10 minutes"
+EOF'
+
+# Enable Fail2Ban plugin in python.d.conf
+sudo bash -c 'cat >> /etc/netdata/python.d.conf << EOF
+fail2ban: yes
+EOF'
+
+# Copy Fail2Ban configuration
+sudo cp /netdata/fail2ban.conf /etc/netdata/python.d/fail2ban.conf
+
+# Set permissions for Fail2Ban log
+sudo usermod -a -G adm netdata
+sudo chmod 640 /var/log/fail2ban.log
+sudo chown root:adm /var/log/fail2ban.log
+
 # Restart Netdata to apply changes
 sudo systemctl restart netdata
