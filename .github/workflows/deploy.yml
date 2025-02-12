@@ -403,6 +403,4 @@ jobs:
               ./netdata/setup_netdata.sh
               chmod +x netdata/setup_alerts.sh
               sudo ./netdata/setup_alerts.sh
-              # Verify Fail2Ban plugin is working
-              sudo /usr/sbin/netdatacli reload-health
               sudo systemctl restart netdata
