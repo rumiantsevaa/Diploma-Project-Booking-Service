@@ -75,6 +75,8 @@ print("База данных обновлена.")
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)  # Генерируем случайный ключ
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['REMEMBER_COOKIE_SECURE'] = True
 csrf = CSRFProtect(app)
 
 @app.before_request
