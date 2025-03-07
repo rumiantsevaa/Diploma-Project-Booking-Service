@@ -2,7 +2,7 @@ import re
 import secrets
 import sqlite3
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, abort
 from flask import g
 from flask_wtf.csrf import CSRFProtect, CSRFError
 import secrets
@@ -171,7 +171,7 @@ def index():
 @app.route('/book/', methods=['POST'])
 def book_hotel():
     token = request.form.get('csrf_token')
-    if request.form.get('csrf_token') != session.get('csrf_token'):
+    if not token or token != session.get('csrf_token'):
         return jsonify({"error": "Invalid CSRF token"}), 400
     conn = get_db_connection()
 
