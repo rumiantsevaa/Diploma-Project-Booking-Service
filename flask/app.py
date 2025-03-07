@@ -84,6 +84,10 @@ csrf = CSRFProtect(app)
 @app.before_request
 def before_request():
     g.csp_nonce = request.headers.get('X-CSP-Nonce', secrets.token_urlsafe(32))
+    if request.method == "POST":
+        token = request.form.get("csrf_token")
+        if not token or not csrf.validate_token(token):
+            abort(400, "CSRF token missing or invalid")
 
 @app.after_request
 def add_security_headers(response):
@@ -101,7 +105,8 @@ def add_security_headers(response):
         "frame-ancestors 'none'; "
         "base-uri 'self'; "
         "form-action 'self'; "
-        "object-src 'none'"
+        "object-src 'none';"
+        "require-trusted-types-for 'script'"
     ).format(nonce=nonce)
     response.headers['Content-Security-Policy'] = csp
     response.headers['Permissions-Policy'] = (
