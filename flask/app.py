@@ -88,6 +88,8 @@ csrf = CSRFProtect(app)
 @app.before_request
 def before_request():
     g.csp_nonce = secrets.token_urlsafe(32)
+    if 'csrf_token' not in session:
+        session['csrf_token'] = csrf._get_token()
     if request.method == "POST":
         token = request.form.get("csrf_token")
         if not token:
@@ -168,6 +170,9 @@ def index():
 
 @app.route('/book/', methods=['POST'])
 def book_hotel():
+    token = request.form.get('csrf_token')
+    if request.form.get('csrf_token') != session.get('csrf_token'):
+        return jsonify({"error": "Invalid CSRF token"}), 400
     conn = get_db_connection()
 
     hotel_id = request.form['hotel-id']
