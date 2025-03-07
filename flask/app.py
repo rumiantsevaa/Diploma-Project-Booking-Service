@@ -4,7 +4,7 @@ import sqlite3
 
 from flask import Flask, render_template, request, jsonify
 from flask import g
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, CSRFError
 import secrets
 
 # Создание или подключение к базе данных <== MERGED FROM INIT_DB.PY  
@@ -75,19 +75,27 @@ print("База данных обновлена.")
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)  # Генерируем случайный ключ
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['REMEMBER_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Strict',
+    WTF_CSRF_TIME_LIMIT=3600,
+    WTF_CSRF_SSL_STRICT=True,
+    WTF_CSRF_CHECK_DEFAULT=True,
+)
 csrf = CSRFProtect(app)
 
 @app.before_request
 def before_request():
-    g.csp_nonce = request.headers.get('X-CSP-Nonce', secrets.token_urlsafe(32))
+    g.csp_nonce = secrets.token_urlsafe(32)
     if request.method == "POST":
         token = request.form.get("csrf_token")
-        if not token or not csrf.validate_token(token):
-            abort(400, "CSRF token missing or invalid")
+        if not token:
+            abort(400, "CSRF token missing")
+        try:
+            csrf.validate_csrf(token)
+        except Exception:
+            abort(400, "Invalid CSRF token")
 
 @app.after_request
 def add_security_headers(response):
@@ -196,3 +204,7 @@ def info():
 @app.route('/flask-health-check')
 def flask_health_check():
     return "success"
+
+@app.errorhandler(CSRFError)
+def handle_csrf_error(e):
+    return jsonify({"error": "CSRF token validation failed"}), 400
