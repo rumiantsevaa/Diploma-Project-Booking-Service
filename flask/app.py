@@ -87,14 +87,17 @@ csrf = CSRFProtect(app)
 
 @app.before_request
 def before_request():
+    # Generate CSRF token if not present in cookies
+    if not request.cookies.get('csrf_token'):
+        g.csrf_token = secrets.token_urlsafe(32)
+    else:
+        g.csrf_token = request.cookies.get('csrf_token')
+    
     g.csp_nonce = secrets.token_urlsafe(32)
+
     if request.method == "POST":
         token = request.form.get("csrf_token")
-        if not token:
-            abort(400, "CSRF token missing")
-        try:
-            csrf.validate_csrf(token)
-        except Exception:
+        if not token or token != request.cookies.get('csrf_token'):
             abort(400, "Invalid CSRF token")
 
 @app.after_request
@@ -103,6 +106,16 @@ def add_security_headers(response):
     response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
     response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
     response.headers['Cross-Origin-Resource-Policy'] = 'same-origin'
+    # Set CSRF token in cookie if not present
+    if not request.cookies.get('csrf_token'):
+        response.set_cookie(
+            'csrf_token', 
+            g.csrf_token,
+            secure=True,
+            httponly=True,
+            samesite='Strict',
+            max_age=3600  # 1 hour expiration
+        )
     # Сохраняем существующий функционал с CSP
     nonce = getattr(g, 'csp_nonce', '')
     csp = (
