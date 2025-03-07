@@ -113,8 +113,7 @@ def add_security_headers(response):
         "frame-ancestors 'none'; "
         "base-uri 'self'; "
         "form-action 'self'; "
-        "object-src 'none';"
-        "require-trusted-types-for 'script'"
+        "object-src 'none'"
     ).format(nonce=nonce)
     response.headers['Content-Security-Policy'] = csp
     response.headers['Permissions-Policy'] = (
@@ -204,6 +203,10 @@ def info():
 @app.route('/flask-health-check')
 def flask_health_check():
     return "success"
+
+@app.route('/csrf-test')
+def csrf_test():
+    return jsonify({"csrf_token": csrf._get_token()})
 
 @app.errorhandler(CSRFError)
 def handle_csrf_error(e):
