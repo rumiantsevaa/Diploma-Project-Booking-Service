@@ -87,18 +87,7 @@ csrf = CSRFProtect(app)
 
 @app.before_request
 def before_request():
-    # Generate CSRF token if not present in cookies
-    if not request.cookies.get('csrf_token'):
-        g.csrf_token = secrets.token_urlsafe(32)
-    else:
-        g.csrf_token = request.cookies.get('csrf_token')
-    
     g.csp_nonce = secrets.token_urlsafe(32)
-
-    if request.method == "POST":
-        token = request.form.get("csrf_token")
-        if not token or token != request.cookies.get('csrf_token'):
-            abort(400, "Invalid CSRF token")
 
 @app.after_request
 def add_security_headers(response):
