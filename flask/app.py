@@ -4,8 +4,6 @@ import sqlite3
 
 from flask import Flask, render_template, request, jsonify
 from flask import g
-from flask_wtf.csrf import CSRFProtect, CSRFError
-import secrets
 
 # Создание или подключение к базе данных <== MERGED FROM INIT_DB.PY  
 db_path = 'hotels.db'
@@ -74,20 +72,10 @@ print("База данных обновлена.")
 # END OF LINES MERGED FROM INIT_DB.PY  
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = secrets.token_hex(16)  # Генерируем случайный ключ
-app.config.update(
-    SESSION_COOKIE_SECURE=True,
-    SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='Strict',
-    WTF_CSRF_TIME_LIMIT=None,
-    WTF_CSRF_SSL_STRICT=True,
-    WTF_CSRF_CHECK_DEFAULT=True,
-)
-csrf = CSRFProtect(app)
 
 @app.before_request
 def before_request():
-    g.csp_nonce = secrets.token_urlsafe(32)
+    g.csp_nonce = request.headers.get('X-CSP-Nonce', secrets.token_urlsafe(32))
 
 @app.after_request
 def add_security_headers(response):
@@ -95,16 +83,6 @@ def add_security_headers(response):
     response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
     response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
     response.headers['Cross-Origin-Resource-Policy'] = 'same-origin'
-    # Set CSRF token in cookie if not present
-    if not request.cookies.get('csrf_token'):
-        response.set_cookie(
-            'csrf_token', 
-            g.csrf_token,
-            secure=True,
-            httponly=True,
-            samesite='Strict',
-            max_age=3600  # 1 hour expiration
-        )
     # Сохраняем существующий функционал с CSP
     nonce = getattr(g, 'csp_nonce', '')
     csp = (
@@ -205,11 +183,3 @@ def info():
 @app.route('/flask-health-check')
 def flask_health_check():
     return "success"
-
-@app.route('/csrf-test')
-def csrf_test():
-    return jsonify({"csrf_token": csrf._get_token()})
-
-@app.errorhandler(CSRFError)
-def handle_csrf_error(e):
-    return jsonify({"error": "CSRF token validation failed"}), 400
