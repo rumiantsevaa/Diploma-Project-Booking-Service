@@ -4,6 +4,8 @@ import sqlite3
 
 from flask import Flask, render_template, request, jsonify
 from flask import g
+from flask_wtf.csrf import CSRFProtect
+import secrets
 
 # Создание или подключение к базе данных <== MERGED FROM INIT_DB.PY  
 db_path = 'hotels.db'
@@ -72,6 +74,8 @@ print("База данных обновлена.")
 # END OF LINES MERGED FROM INIT_DB.PY  
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = secrets.token_hex(16)  # Генерируем случайный ключ
+csrf = CSRFProtect(app)
 
 @app.before_request
 def before_request():
