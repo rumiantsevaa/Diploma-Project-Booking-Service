@@ -1,4 +1,2 @@
 Flask
 gunicorn
-Flask-WTF
-Flask-Session

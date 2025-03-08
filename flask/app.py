@@ -148,6 +148,12 @@ def index():
 
 @app.route('/book/', methods=['POST'])
 def book_hotel():
+
+    # Check the dummy CSRF token
+    token = request.form.get('csrf_token')
+    if token != 'dummy_token':
+        abort(400, description="Invalid CSRF token")
+
     conn = get_db_connection()
 
     hotel_id = request.form['hotel-id']
