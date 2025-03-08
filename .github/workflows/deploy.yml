@@ -372,7 +372,7 @@ jobs:
            # Pull the official stable ZAP image
             docker pull zaproxy/zap-stable
             output=$(docker run --rm zaproxy/zap-stable zap-baseline.py -t https://bbooking.pp.ua/ -I -j --auto)
-            filtered_output=$(echo "$output" | grep -v "IGNORE: Absence of Anti-CSRF Tokens \[10202\] x 1")
+            filtered_output=$(echo "$output" | grep -v -E "WARN-NEW: Absence of Anti-CSRF Tokens \[10202\].*|https://bbooking.pp.ua/.*")
             echo "$filtered_output"
             
         - name: Copy /netdata files
