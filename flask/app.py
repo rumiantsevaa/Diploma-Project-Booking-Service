@@ -73,6 +73,9 @@ print("База данных обновлена.")
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)  # Генерация безопасного секретного ключа
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 def generate_csrf_token():
     if 'csrf_token' not in session:
@@ -87,7 +90,11 @@ def verify_csrf_token():
         stored_token = session.get('csrf_token')
         submitted_token = request.form.get('csrf_token')
         
-        if not stored_token or not submitted_token or not secrets.compare_digest(stored_token, submitted_token):
+        if not stored_token or not submitted_token:
+            session['csrf_token'] = secrets.token_hex(32)
+            return jsonify({"error": "Please try again"}), 403
+            
+        if not secrets.compare_digest(stored_token, submitted_token):
             return jsonify({"error": "Invalid CSRF token"}), 403
 
     g.csp_nonce = request.headers.get('X-CSP-Nonce', secrets.token_urlsafe(32))
