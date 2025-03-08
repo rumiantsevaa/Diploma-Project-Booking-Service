@@ -23,6 +23,9 @@ ENV VIRTUAL_ENV=/home/app/venv
 # python setup
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+ENV FLASK_SESSION_COOKIE_SECURE=True
+ENV FLASK_SESSION_COOKIE_HTTPONLY=True
+ENV FLASK_SESSION_COOKIE_SAMESITE='Lax'
 RUN export FLASK_APP=app.py
 RUN pip install -r requirements.txt
 

@@ -2,7 +2,7 @@ import re
 import secrets
 import sqlite3
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, g
 from flask import g
 
 # Создание или подключение к базе данных <== MERGED FROM INIT_DB.PY  
@@ -72,9 +72,24 @@ print("База данных обновлена.")
 # END OF LINES MERGED FROM INIT_DB.PY  
 
 app = Flask(__name__)
+app.secret_key = secrets.token_hex(32)  # Генерация безопасного секретного ключа
+
+def generate_csrf_token():
+    if 'csrf_token' not in session:
+        session['csrf_token'] = secrets.token_hex(32)
+    return session['csrf_token']
+
+app.jinja_env.globals['csrf_token'] = generate_csrf_token  # Добавляем токен во все шаблоны
 
 @app.before_request
-def before_request():
+def verify_csrf_token():
+    if request.method == "POST":
+        stored_token = session.get('csrf_token')
+        submitted_token = request.form.get('csrf_token')
+        
+        if not stored_token or not submitted_token or not secrets.compare_digest(stored_token, submitted_token):
+            return jsonify({"error": "Invalid CSRF token"}), 403
+
     g.csp_nonce = request.headers.get('X-CSP-Nonce', secrets.token_urlsafe(32))
 
 @app.after_request
