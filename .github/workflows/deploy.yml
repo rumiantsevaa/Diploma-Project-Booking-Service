@@ -372,11 +372,13 @@ jobs:
            # Pull the official stable ZAP image
             docker pull zaproxy/zap-stable
             docker run --rm \
+              -v ${{ github.workspace }}/zap_alert_filter.conf:/zap/wrk/zap_alert_filter.conf \
               zaproxy/zap-stable zap-baseline.py \
               -t https://bbooking.pp.ua/ \
               -I \
               -j \
-              --auto 
+              --auto \
+              -c /zap/wrk/zap_alert_filter.conf
             
         - name: Copy /netdata files
           uses: appleboy/scp-action@master
