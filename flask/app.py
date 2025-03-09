@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 
 # Список отелей для добавления/обновления ДЛЯ ТЕСТА CHANGE HOTEL NAME British Elegance Hotel <->  British Grace Hotel
 hotels = [
-    ('British Elegance Hotel', 'United Kingdom, London', 150.00, 'Luxurious hotel with modern British design in the heart of London', 'british.avif'), 
+    ('British Grace Hotel', 'United Kingdom, London', 150.00, 'Luxurious hotel with modern British design in the heart of London', 'british.avif'), 
     ('Oriental Pearl Hotel', 'China, Shanghai', 180.00, 'Sophisticated hotel blending traditional Chinese style with modern comfort', 'chinese.avif'),
     ('Modern Cottage Retreat', 'Canada, Rocky Mountains', 90.00, 'Contemporary cottage surrounded by breathtaking mountain scenery', 'modern_cottage.avif'),
     ('Skyline Skyscraper Hotel', 'Japan, Tokyo', 300.00, 'Magnificent skyscraper offering panoramic city views and world-class amenities', 'skyscraper.avif'), 
