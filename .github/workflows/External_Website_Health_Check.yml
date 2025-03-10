@@ -1,8 +1,8 @@
 name: Website Health Check
 
-on:
-  schedule:
-    - cron: '*/10 * * * *'
+# on:
+#   schedule:
+#     - cron: '*/10 * * * *'
   workflow_dispatch:
 
 jobs:
