@@ -1,9 +1,18 @@
 name: Website Health Check
 
+# Used to be scheduled but now deactivated within infrastructure shutdown upon Diploma Defense
 # on:
 #   schedule:
 #     - cron: '*/10 * * * *'
+#   workflow_dispatch:
+
+on:
   workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Left on manual trigger to maintain correct syntax.'
+        required: false
+        default: 'Should not be triggered due to infrastructure shutdown. I will miss you, my server ❤️'
 
 jobs:
   health-check:
